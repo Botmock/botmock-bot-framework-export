@@ -1,10 +1,22 @@
 import { ActivityHandler } from "botbuilder";
+// import fetch from "node-fetch";
 
-export class Bot extends ActivityHandler {
-  constructor(config = {}) {
+export interface UserConfig {
+  token: string;
+  teamId: string;
+  projectId: string;
+  boardId: string;
+}
+
+type Readonly<I> = { readonly [P in keyof I]: I[P] };
+
+// Export class extending botbuilder's event-emitting class
+export default class Bot extends ActivityHandler {
+  constructor(userConfig: Readonly<UserConfig>) {
     super();
+    // console.log(userConfig);
     this.onMessage(async (ctx, next) => {
-      await ctx.sendActivity(`..${ctx.activity.text}`);
+      await ctx.sendActivity(`: ${ctx.activity.text}`);
       await next();
     });
     this.onMembersAdded(async (ctx, next) => {
@@ -15,8 +27,10 @@ export class Bot extends ActivityHandler {
       }
       await next();
     });
+    this.onMembersRemoved(async (ctx, next) => {
+      for (const member of ctx.activity.membersRemoved) {
+        await ctx.sendActivity(`${member.id} has left the conversation`);
+      }
+    });
   }
-
-  // onMessage() {}
-  // onMembersAdded() {}
 }
