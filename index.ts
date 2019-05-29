@@ -9,6 +9,8 @@ config();
 const PORT = process.env.PORT || 8080;
 const server = createServer();
 
+interface Err extends Error {}
+
 try {
   const bot = new Bot({
     token: process.env.BOTMOCK_TOKEN,
@@ -17,25 +19,23 @@ try {
     boardId: process.env.BOTMOCK_BOARD_ID,
   });
   const adapter = new BotFrameworkAdapter({
-    appId: process.env.MS_APP_ID,
-    appPassword: process.env.MS_APP_PASSWORD,
+    // appId: process.env.MS_APP_ID,
+    // appPassword: process.env.MS_APP_PASSWORD,
   });
-  adapter.onTurnError = async (ctx, err) => {
-    console.log(err);
+  adapter.onTurnError = async (ctx, err: Err) => {
+    // console.log(err);
     await ctx.sendActivity(err.message);
   };
   server.listen(
     PORT,
     (): void => {
-      console.log(`Listening on http://localhost:${PORT}`);
-      console.log(
-        `Sending a POST request to /messages will send a message to the bot`
-      );
+      console.log(`Send POST requests to http://localhost:${PORT}/messages`);
     }
   );
   server.post(
     "/messages",
     (req: WebRequest, res: WebResponse): void => {
+      console.log(req);
       adapter.processActivity(req, res, async ctx => {
         await bot.run(ctx);
       });
