@@ -21,13 +21,14 @@ export default class Bot extends ActivityHandler {
     this.recognizer = new LuisRecognizer(
       {
         applicationId: process.env.LUIS_APP_ID,
-        endpointKey: process.env.LUIS_NEDPOINT_KEY,
+        endpointKey: process.env.LUIS_ENDPOINT_KEY,
         // azureRegion: process.env.AZURE_REGION
       },
       { includeAllIntents: true, log: true, staging: false }
     );
     this.onMessage(async (ctx, next) => {
-      // await this.doNLP(ctx);
+      // const intent = await this.doNLP(ctx);
+      // console.log(intent);
       await ctx.sendActivity(`:: ${ctx.activity.text}`);
       await next();
     });
@@ -46,8 +47,12 @@ export default class Bot extends ActivityHandler {
     });
   }
 
-  private async doNLP(ctx: TurnContext) {
+  // recognize the intent from the turn context
+  private async doNLP(ctx: TurnContext): Promise<string | null> {
     const { luisResult } = await this.recognizer.recognize(ctx);
     return luisResult.topScoringIntent;
   }
+
+  // seed the Luis service with intents from the Botmock project
+  private async seedLuis(): Promise<void> {}
 }

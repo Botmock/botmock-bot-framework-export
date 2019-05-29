@@ -18,12 +18,9 @@ try {
     projectId: process.env.BOTMOCK_PROJECT_ID,
     boardId: process.env.BOTMOCK_BOARD_ID,
   });
-  const adapter = new BotFrameworkAdapter({
-    // appId: process.env.MS_APP_ID,
-    // appPassword: process.env.MS_APP_PASSWORD,
-  });
+  // TODO: support optional appId and appPassword config fields
+  const adapter = new BotFrameworkAdapter({});
   adapter.onTurnError = async (ctx, err: Err) => {
-    // console.log(err);
     await ctx.sendActivity(err.message);
   };
   server.listen(
@@ -35,7 +32,7 @@ try {
   server.post(
     "/messages",
     (req: WebRequest, res: WebResponse): void => {
-      console.log(req);
+      // console.log(req);
       adapter.processActivity(req, res, async ctx => {
         await bot.run(ctx);
       });

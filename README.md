@@ -12,6 +12,8 @@ node --version
 
 - [Bot Framework Emulator](https://github.com/Microsoft/BotFramework-Emulator/blob/master/README.md) >= 4.3.0
 
+- [Luis.ai](https://www.luis.ai) account (with a trained and published model).
+
 ## guide
 
 Clone this repository and install dependencies:
@@ -29,9 +31,11 @@ BOTMOCK_TOKEN="@YOUR-BOTMOCK-TOKEN"
 BOTMOCK_TEAM_ID="@YOUR-BOTMOCK-TEAM-ID"
 BOTMOCK_BOARD_ID="@YOUR-BOTMOCK-BOARD-ID"
 BOTMOCK_PROJECT_ID="@YOUR-BOTMOCK-PROJECT-ID"
-MS_APP_ID="@YOUR-MS-APP-ID"
-MS_APP_PASSWORD="@YOUR-MS-APP-PASSWORD"
+LUIS_APP_ID="@YOUR-LUIS-APP-ID"
+LUIS_ENDPOINT_KEY="@YOUR-LUIS-ENDPOINT_KEY"
 ```
+
+> The last two fields should be obtained by visiting "Application Settings" in the luis.ai dashboard.
 
 Start the HTTP server:
 
