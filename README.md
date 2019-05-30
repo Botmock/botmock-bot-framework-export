@@ -1,6 +1,6 @@
 # botmock-botframework-export
 
-This is a script that ports a Botmock project to MS Botframework.
+Port a Botmock project to MS Botframework.
 
 ## prerequisites
 
@@ -20,6 +20,8 @@ Clone this repository and install dependencies:
 
 ```shell
 git clone git@github.com:Botmock/botmock-botframework-export.git
+
+cd botmock-botframework-export
 
 npm i
 ```

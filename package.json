@@ -1,7 +1,7 @@
 {
   "name": "botmock-botframework-export",
   "version": "1.0.0",
-  "description": "",
+  "description": "port a Botmock project to MS Botframework",
   "main": "index.ts",
   "module": "index.ts",
   "scripts": {

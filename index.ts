@@ -6,8 +6,7 @@ import Bot from "./Bot";
 // bring the env variables into scope
 config();
 
-const PORT = process.env.PORT || 8080;
-const server = createServer();
+export const server = createServer();
 
 interface Err extends Error {}
 
@@ -25,6 +24,7 @@ try {
   adapter.onTurnError = async (ctx, err: Err) => {
     await ctx.sendActivity(err.message);
   };
+  const PORT = process.env.PORT || 8080;
   server.listen(
     PORT,
     (): void => {

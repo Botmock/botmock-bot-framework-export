@@ -9,6 +9,10 @@ export interface UserConfig {
   boardId: string;
 }
 
+type Intent = {
+  name?: string;
+};
+
 // Export class extending botbuilder's event-emitting class
 export default class Bot extends ActivityHandler {
   private recognizer: LuisRecognizerTelemetryClient;
@@ -57,5 +61,5 @@ export default class Bot extends ActivityHandler {
   }
 
   // seed the Luis service with intents from the Botmock project
-  private async seedLuis(): Promise<void> {}
+  private async seedLuis(intents: Partial<Intent>[]): Promise<void> {}
 }
