@@ -12,7 +12,7 @@ node --version
 
 - [Bot Framework Emulator](https://github.com/Microsoft/BotFramework-Emulator/blob/master/README.md) >= 4.3.0
 
-- [Luis.ai](https://www.luis.ai) account (with a trained and published model).
+- [Luis.ai](https://www.luis.ai) account
 
 ## guide
 

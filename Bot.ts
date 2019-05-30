@@ -32,8 +32,10 @@ type Entity = {
   data: { value: string; synonyms: string[] }[];
 };
 
+type LuisResponse = string | { error: Error };
+
 const BOTMOCK_API_URL = "https://app.botmock.com/api";
-// const LUIS_API_URL = "";
+const LUIS_API_URL = "https://westus.api.cognitive.microsoft.com/luis/api/v2.0";
 
 // export class extending botbuilder's event-emitting class
 export default class Bot extends ActivityHandler {
@@ -44,17 +46,15 @@ export default class Bot extends ActivityHandler {
     (async () => {
       const url = `${BOTMOCK_API_URL}/teams/${teamId}/projects/${projectId}/intents`;
       // on boot, seed luis with intent data from the connected project
-      try {
-        const intents = await (await fetch(url, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        })).json();
-        const { ok } = await this.seedLuis(intents);
-        console.log(ok);
-      } catch (err) {
-        throw new Error("failed to upload intents to luis.ai");
+      const intents = await (await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })).json();
+      const res: LuisResponse = await this.seedLuis(intents);
+      if (typeof res !== "string") {
+        throw res.error;
       }
     })();
     this.recognizer = new LuisRecognizer(
@@ -105,14 +105,34 @@ export default class Bot extends ActivityHandler {
     nativeIntents: Partial<Intent>[],
     nativeEntities?: Entity[]
   ): Promise<any> {
-    const intents = nativeIntents;
-    const entities = nativeEntities;
+    // const entities = nativeEntities.map(({ name }) => ({ name, roles: [] }));
+    const name = String(Math.floor(Math.random() * 1e5));
+    const intents = nativeIntents.map(({ name }) => ({ name }));
+    const utterances = nativeIntents.reduce((acc, intent) => {
+      return [
+        ...acc,
+        ...intent.utterances.map(utterance => ({
+          text: utterance.text,
+          intent: intent.name,
+          entities: [],
+        })),
+      ];
+    }, []);
     const body = {
       ...templates.luisAppStructure,
+      name,
       intents,
-      entities,
+      utterances,
+      // entities,
     };
-    console.log(body);
-    return {};
+    const url = `${LUIS_API_URL}/apps/import`;
+    return await (await fetch(url, {
+      method: "POST",
+      headers: {
+        "Ocp-Apim-Subscription-Key": process.env.LUIS_ENDPOINT_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    })).json();
   }
 }

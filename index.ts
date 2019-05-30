@@ -34,7 +34,7 @@ try {
   server.post(
     "/messages",
     (req: WebRequest, res: WebResponse): void => {
-      console.log(req);
+      // console.log(req);
       adapter.processActivity(req, res, async ctx => {
         await bot.run(ctx);
       });
