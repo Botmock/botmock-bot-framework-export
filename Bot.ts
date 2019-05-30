@@ -1,6 +1,6 @@
 import { ActivityHandler, TurnContext } from "botbuilder";
 import { LuisRecognizer, LuisRecognizerTelemetryClient } from "botbuilder-ai";
-// import fetch from "node-fetch";
+import fetch from "node-fetch";
 
 export interface UserConfig {
   token: string;
@@ -9,15 +9,13 @@ export interface UserConfig {
   boardId: string;
 }
 
-type Readonly<I> = { readonly [P in keyof I]: I[P] };
-
 // Export class extending botbuilder's event-emitting class
 export default class Bot extends ActivityHandler {
-  recognizer: LuisRecognizerTelemetryClient;
+  private recognizer: LuisRecognizerTelemetryClient;
 
   constructor(userConfig: Readonly<UserConfig>) {
     super();
-    // this.userConig = userConfig;
+    // this.userConfig = userConfig;
     this.recognizer = new LuisRecognizer(
       {
         applicationId: process.env.LUIS_APP_ID,
@@ -27,9 +25,14 @@ export default class Bot extends ActivityHandler {
       { includeAllIntents: true, log: true, staging: false }
     );
     this.onMessage(async (ctx, next) => {
-      // const intent = await this.doNLP(ctx);
-      // console.log(intent);
-      await ctx.sendActivity(`:: ${ctx.activity.text}`);
+      const intent = await this.getIntentFromContext(ctx);
+      if (!Object.is(intent, null)) {
+        // ..
+      } else {
+        await ctx.sendActivity(
+          `"${ctx.activity.text}" does not match any intent.`
+        );
+      }
       await next();
     });
     this.onMembersAdded(async (ctx, next) => {
@@ -48,7 +51,7 @@ export default class Bot extends ActivityHandler {
   }
 
   // recognize the intent from the turn context
-  private async doNLP(ctx: TurnContext): Promise<string | null> {
+  private async getIntentFromContext(ctx: TurnContext): Promise<string | null> {
     const { luisResult } = await this.recognizer.recognize(ctx);
     return luisResult.topScoringIntent;
   }

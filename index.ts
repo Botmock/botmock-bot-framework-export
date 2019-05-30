@@ -18,8 +18,10 @@ try {
     projectId: process.env.BOTMOCK_PROJECT_ID,
     boardId: process.env.BOTMOCK_BOARD_ID,
   });
-  // TODO: support optional appId and appPassword config fields
-  const adapter = new BotFrameworkAdapter({});
+  const adapter = new BotFrameworkAdapter({
+    // appId: process.env.MS_APP_ID,
+    // appPassword: process.env.MS_APP_PASSWORD,
+  });
   adapter.onTurnError = async (ctx, err: Err) => {
     await ctx.sendActivity(err.message);
   };
