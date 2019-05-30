@@ -9,17 +9,48 @@ export interface UserConfig {
   boardId: string;
 }
 
-type Intent = {
-  name?: string;
+type Utterance = {
+  text: string;
+  variables: {
+    id: string;
+    name: string;
+    entity: string;
+    start_index: number;
+  }[];
 };
 
-// Export class extending botbuilder's event-emitting class
+type Intent = {
+  id: string;
+  name: string;
+  utterances: Utterance[];
+};
+
+type Entity = {
+  id: string;
+  name: string;
+  data: { value: string; synonyms: string[] }[];
+};
+
+const BOTMOCK_API_URL = "https://app.botmock.com/api";
+
+// export class extending botbuilder's event-emitting class
 export default class Bot extends ActivityHandler {
   private recognizer: LuisRecognizerTelemetryClient;
 
-  constructor(userConfig: Readonly<UserConfig>) {
+  // on boot, seed luis with intent data from the connected project and provide
+  // handlers for incoming bot activity
+  constructor({ teamId, projectId, token }: Readonly<UserConfig>) {
     super();
-    // this.userConfig = userConfig;
+    (async () => {
+      const url = `${BOTMOCK_API_URL}/teams/${teamId}/projects/${projectId}/intents`;
+      const res = await (await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })).json();
+      console.log(res);
+    })();
     this.recognizer = new LuisRecognizer(
       {
         applicationId: process.env.LUIS_APP_ID,
@@ -30,6 +61,7 @@ export default class Bot extends ActivityHandler {
     );
     this.onMessage(async (ctx, next) => {
       const intent = await this.getIntentFromContext(ctx);
+      // ..
       if (!Object.is(intent, null)) {
         // ..
       } else {
@@ -61,5 +93,10 @@ export default class Bot extends ActivityHandler {
   }
 
   // seed the Luis service with intents from the Botmock project
-  private async seedLuis(intents: Partial<Intent>[]): Promise<void> {}
+  private async seedLuis(
+    intents: Partial<Intent>[],
+    entities?: Entity[]
+  ): Promise<void> {
+    // ..
+  }
 }

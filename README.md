@@ -37,10 +37,12 @@ LUIS_APP_ID="@YOUR-LUIS-APP-ID"
 LUIS_ENDPOINT_KEY="@YOUR-LUIS-ENDPOINT_KEY"
 ```
 
-> The last two fields should be obtained by visiting "Application Settings" in the luis.ai dashboard.
+> The last two fields should be obtainable by visiting "Application Settings" in the luis.ai dashboard.
 
 Start the HTTP server:
 
 ```shell
 npm start
 ```
+
+Open Bot Framework Emulator and point it to `http://localhost:8080/messages`.
