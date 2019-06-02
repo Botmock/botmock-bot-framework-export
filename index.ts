@@ -5,8 +5,6 @@ import Bot from "./Bot";
 
 export const server = createServer();
 
-interface Err extends Error {}
-
 try {
   // bring the env variables into scope
   config();
@@ -21,7 +19,7 @@ try {
     // appId: process.env.MS_APP_ID,
     // appPassword: process.env.MS_APP_PASSWORD,
   });
-  adapter.onTurnError = async (ctx, err: Err) => {
+  adapter.onTurnError = async (ctx, err: Error) => {
     await ctx.sendActivity(`Error:\n${err.message}`);
   };
   const PORT = process.env.PORT || 8080;
