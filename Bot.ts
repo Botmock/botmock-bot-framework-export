@@ -1,5 +1,6 @@
 import { ActivityHandler, TurnContext } from "botbuilder";
 import { LuisRecognizer, LuisRecognizerTelemetryClient } from "botbuilder-ai";
+import uuid from "uuid/v4"
 import fetch from "node-fetch";
 import EventEmitter from "events";
 import * as templates from "./templates";
@@ -52,7 +53,8 @@ export default class Bot extends ActivityHandler {
   private intentMap: IntentMap;
   private luisAppId: string;
 
-  // on boot, seed luis with intent data from the connected project
+  // on boot, seed luis with intent data from the connected project and add activity
+  // event handlers
   constructor({ teamId, projectId, boardId, token }: Readonly<UserConfig>) {
     super();
     (async () => {
@@ -86,24 +88,25 @@ export default class Bot extends ActivityHandler {
         },
         { includeAllIntents: true, log: true, staging: false }
       );
+      // create handler for all incoming messages
+      this.onMessage(async (ctx, next) => {
+        const intentName: string | void = await this.getIntentFromContext(ctx);
+        if (typeof intentName !== "undefined") {
+          Array.from(this.intentMap)
+            .filter(([messageId, intents]) => intents.some(intent => intent.name === intentName))
+            .map(([messageId]) => messageId)
+            .forEach(async id => {
+              const message = board.messages.find(message => message.message_id === id)
+              await ctx.sendActivity(message.payload.text)
+            })
+        } else {
+          await ctx.sendActivity(
+            `"${ctx.activity.text}" does not match any intent.`
+          );
+        }
+        await next();
+      });
     })();
-    // create handler for all incoming messages
-    this.onMessage(async (ctx, next) => {
-      const intentName: string | void = await this.getIntentFromContext(ctx);
-      if (typeof intentName !== "undefined") {
-        const relevantMessages = Array.from(this.intentMap)
-          .filter(([messageId, intents]) => {
-            return intents.some(intent => intent.name === intentName)
-          })
-          .map(([messageId]) => messageId);
-        // console.log(relevantMessages);
-      } else {
-        await ctx.sendActivity(
-          `"${ctx.activity.text}" does not match any intent.`
-        );
-      }
-      await next();
-    });
     // create handler for incoming user
     this.onMembersAdded(async (ctx, next) => {
       for (const member of ctx.activity.membersAdded) {
@@ -125,6 +128,7 @@ export default class Bot extends ActivityHandler {
   // recognize the intent from the turn context
   private async getIntentFromContext(ctx: TurnContext): Promise<string | void> {
     const { intents } = await this.recognizer.recognize(ctx);
+    console.log(intents);
     const [topIntent] = Object.keys(intents).sort(
       (prevKey, curKey) => intents[curKey].score - intents[prevKey].score
     );
@@ -137,7 +141,6 @@ export default class Bot extends ActivityHandler {
     // nativeEntities?: Entity[]
   ): Promise<any> {
     // const entities = nativeEntities.map(({ name }) => ({ name, roles: [] }));
-    const name = String(Math.floor(Math.random() * 1e5));
     const intents = nativeIntents.map(({ name }) => ({ name }));
     const utterances = nativeIntents.reduce((acc, intent) => {
       return [
@@ -154,7 +157,7 @@ export default class Bot extends ActivityHandler {
     }
     const body = {
       ...templates.luisAppStructure,
-      name,
+      name: uuid(),
       intents,
       utterances,
       // entities,

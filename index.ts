@@ -24,6 +24,8 @@ Add >= 10 utterances for each intent to prevent training failure.`);
   // wait until luis.ai model generation and training has completed before
   // listening on port
   emitter.on("train-complete", () => {
+    console.log(`Training completed.
+Visit the luis.ai dashboard and publish.`);
     server.listen(
       PORT,
       (): void => {
