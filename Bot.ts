@@ -1,7 +1,7 @@
 import { ActivityHandler, TurnContext } from "botbuilder";
 import { LuisRecognizer, LuisRecognizerTelemetryClient } from "botbuilder-ai";
 import fetch from "node-fetch";
-// import * as botmockUtils from "@botmock-api/utils";
+import EventEmitter from "events";
 import * as templates from "./templates";
 import { createIntentMap, IntentMap } from "./utils";
 
@@ -44,17 +44,18 @@ export interface UserConfig {
   boardId: string;
 }
 
+export const emitter = new EventEmitter();
+
 // export class extending botbuilder's event-emitting class
 export default class Bot extends ActivityHandler {
   private recognizer: LuisRecognizerTelemetryClient;
   private intentMap: IntentMap;
 
+  // on boot, seed luis with intent data from the connected project
   constructor({ teamId, projectId, boardId, token }: Readonly<UserConfig>) {
     super();
     (async () => {
-      // GET https://app.botmock.com/api/teams/<TEAM-ID>/projects/<PROJECT-ID>/boards/<BOARD-ID>
       const baseURL = `${BOTMOCK_API_URL}/teams/${teamId}/projects/${projectId}`;
-      // on boot, seed luis with intent data from the connected project
       const intents = await (await fetch(`${baseURL}/intents`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -68,13 +69,14 @@ export default class Bot extends ActivityHandler {
         },
       })).json();
       // store the mapping of message id -> intentful in-neighbor connection ids
+      // to produce correct bot responses in the context of conversation
       this.intentMap = createIntentMap(board.messages);
       const res: LuisImportResponse = await this.seedLuis(intents);
       if (typeof res !== "string") {
         throw res.error;
       }
       await this.trainLuis(res, LUIS_VERSION_ID);
-      console.log("luis.ai project created and trained..");
+      emitter.emit("seed-complete");
     })();
     this.recognizer = new LuisRecognizer(
       {
@@ -87,8 +89,11 @@ export default class Bot extends ActivityHandler {
     // identified intents
     this.onMessage(async (ctx, next) => {
       const intent = await this.getIntentFromContext(ctx);
-      if (!Object.is(intent, null)) {
-        // ..
+      // if there is an intent in this context, find all messages that have this
+      // intent as an in-neighbor
+      if (typeof intent !== "undefined") {
+        // TODO: produce string of messages from name of intent
+        console.log(this.intentMap);
       } else {
         await ctx.sendActivity(
           `"${ctx.activity.text}" does not match any intent.`
@@ -114,9 +119,13 @@ export default class Bot extends ActivityHandler {
   }
 
   // recognize the intent from the turn context
-  private async getIntentFromContext(ctx: TurnContext): Promise<string | null> {
-    const { luisResult } = await this.recognizer.recognize(ctx);
-    return luisResult.topScoringIntent;
+  private async getIntentFromContext(ctx: TurnContext): Promise<string | void> {
+    const { intents } = await this.recognizer.recognize(ctx);
+    const [topIntent] = Object.keys(intents).sort(
+      (prevKey, curKey) => intents[curKey].score - intents[prevKey].score
+    );
+    console.log(topIntent);
+    return topIntent;
   }
 
   // seed the Luis service with intents and entities from the Botmock project
@@ -137,6 +146,7 @@ export default class Bot extends ActivityHandler {
         })),
       ];
     }, []);
+    // console.log(utterances);
     const body = {
       ...templates.luisAppStructure,
       name,
