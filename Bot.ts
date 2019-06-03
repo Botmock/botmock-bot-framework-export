@@ -22,11 +22,11 @@ export type Intent = {
   utterances: Utterance[];
 };
 
-// type Entity = {
-//   id: string;
-//   name: string;
-//   data: { value: string; synonyms: string[] }[];
-// };
+type Entity = {
+  id: string;
+  name: string;
+  data: { value: string; synonyms: string[] }[];
+};
 
 type LuisImportResponse = string | { error: Error };
 
@@ -59,22 +59,26 @@ export default class Bot extends ActivityHandler {
     super();
     (async () => {
       const baseURL = `${BOTMOCK_API_URL}/teams/${teamId}/projects/${projectId}`;
-      const intents = await (await fetch(`${baseURL}/intents`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      })).json();
-      const { board } = await (await fetch(`${baseURL}/boards/${boardId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      })).json();
+      // make api requests for intents, entities, and the board
+      const [intents, entities, board] = await Promise.all(
+        ["intents", "entities", `boards/${boardId}`].map(async path => {
+          const res = await (await fetch(`${baseURL}/${path}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          })).json();
+          if (path.startsWith("boards")) {
+            return res.board;
+          } else {
+            return res;
+          }
+        })
+      );
       // store the mapping of message id -> in-neighbor intents to later produce
       // correct bot responses in the context of conversation
       this.intentMap = createIntentMap(board.messages, intents);
-      const res: LuisImportResponse = await this.seedLuis(intents);
+      const res: LuisImportResponse = await this.seedLuis(intents, entities);
       if (typeof res !== "string") {
         throw res.error;
       }
@@ -132,7 +136,6 @@ export default class Bot extends ActivityHandler {
   // recognize the intent from the turn context
   private async getIntentFromContext(ctx: TurnContext): Promise<string | void> {
     const { intents } = await this.recognizer.recognize(ctx);
-    console.log(intents);
     const [topIntent] = Object.keys(intents).sort(
       (prevKey, curKey) => intents[curKey].score - intents[prevKey].score
     );
@@ -141,10 +144,10 @@ export default class Bot extends ActivityHandler {
 
   // seed the Luis service with intents and entities from the Botmock project
   private async seedLuis(
-    nativeIntents: Partial<Intent>[]
-    // nativeEntities?: Entity[]
+    nativeIntents: Partial<Intent>[],
+    nativeEntities?: Entity[]
   ): Promise<any> {
-    // const entities = nativeEntities.map(({ name }) => ({ name, roles: [] }));
+    const entities = nativeEntities.map(({ name }) => ({ name, roles: [] }));
     const intents = nativeIntents.map(({ name }) => ({ name }));
     const utterances = nativeIntents.reduce((acc, intent) => {
       return [
@@ -164,7 +167,7 @@ export default class Bot extends ActivityHandler {
       name: uuid(),
       intents,
       utterances,
-      // entities,
+      entities,
     };
     const url = `${LUIS_API_URL}/apps/import`;
     return await (await fetch(url, {
