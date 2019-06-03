@@ -50,6 +50,7 @@ export const emitter = new EventEmitter();
 export default class Bot extends ActivityHandler {
   private recognizer: LuisRecognizerTelemetryClient;
   private intentMap: IntentMap;
+  private luisAppId: string;
 
   // on boot, seed luis with intent data from the connected project
   constructor({ teamId, projectId, boardId, token }: Readonly<UserConfig>) {
@@ -68,23 +69,24 @@ export default class Bot extends ActivityHandler {
           "Content-Type": "application/json",
         },
       })).json();
-      // store the mapping of message id -> in-neighbor intents
-      // to later produce correct bot responses in the context of conversation
+      // store the mapping of message id -> in-neighbor intents to later produce
+      // correct bot responses in the context of conversation
       this.intentMap = createIntentMap(board.messages, intents);
       const res: LuisImportResponse = await this.seedLuis(intents);
       if (typeof res !== "string") {
         throw res.error;
       }
       await this.trainLuis(res, LUIS_VERSION_ID);
-      emitter.emit("seed-complete");
+      emitter.emit("train-complete");
+      // create instance of the recognized from newly-created app id
+      this.recognizer = new LuisRecognizer(
+        {
+          applicationId: res,
+          endpointKey: process.env.LUIS_ENDPOINT_KEY,
+        },
+        { includeAllIntents: true, log: true, staging: false }
+      );
     })();
-    this.recognizer = new LuisRecognizer(
-      {
-        applicationId: process.env.LUIS_APP_ID,
-        endpointKey: process.env.LUIS_ENDPOINT_KEY,
-      },
-      { includeAllIntents: true, log: true, staging: false }
-    );
     // create handler for all incoming messages
     this.onMessage(async (ctx, next) => {
       const intentName: string | void = await this.getIntentFromContext(ctx);

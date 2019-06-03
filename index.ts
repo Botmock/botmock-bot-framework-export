@@ -21,8 +21,9 @@ try {
     console.warn(`There are too few utterances for one or more intents.
 Add >= 10 utterances for each intent to prevent training failure.`);
   });
-  // wait until luis.ai model generation has completed before listening on port
-  emitter.on("seed-complete", () => {
+  // wait until luis.ai model generation and training has completed before
+  // listening on port
+  emitter.on("train-complete", () => {
     server.listen(
       PORT,
       (): void => {
