@@ -1,6 +1,6 @@
 import { ActivityHandler, TurnContext } from "botbuilder";
 import { LuisRecognizer, LuisRecognizerTelemetryClient } from "botbuilder-ai";
-import uuid from "uuid/v4"
+import uuid from "uuid/v4";
 import fetch from "node-fetch";
 import EventEmitter from "events";
 import * as templates from "./templates";
@@ -93,12 +93,16 @@ export default class Bot extends ActivityHandler {
         const intentName: string | void = await this.getIntentFromContext(ctx);
         if (typeof intentName !== "undefined") {
           Array.from(this.intentMap)
-            .filter(([messageId, intents]) => intents.some(intent => intent.name === intentName))
+            .filter(([messageId, intents]) =>
+              intents.some(intent => intent.name === intentName)
+            )
             .map(([messageId]) => messageId)
             .forEach(async id => {
-              const message = board.messages.find(message => message.message_id === id)
-              await ctx.sendActivity(message.payload.text)
-            })
+              const message = board.messages.find(
+                message => message.message_id === id
+              );
+              await ctx.sendActivity(message.payload.text);
+            });
         } else {
           await ctx.sendActivity(
             `"${ctx.activity.text}" does not match any intent.`
@@ -137,7 +141,7 @@ export default class Bot extends ActivityHandler {
 
   // seed the Luis service with intents and entities from the Botmock project
   private async seedLuis(
-    nativeIntents: Partial<Intent>[],
+    nativeIntents: Partial<Intent>[]
     // nativeEntities?: Entity[]
   ): Promise<any> {
     // const entities = nativeEntities.map(({ name }) => ({ name, roles: [] }));

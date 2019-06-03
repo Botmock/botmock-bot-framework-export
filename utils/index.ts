@@ -6,7 +6,10 @@ type Message = {
 
 export type IntentMap = Map<string, Intent[]>;
 
-export const createIntentMap = (messages: Message[] = [], intents: Intent[] = []): IntentMap => {
+export const createIntentMap = (
+  messages: Message[] = [],
+  intents: Intent[] = []
+): IntentMap => {
   return new Map<string, Intent[]>(
     messages.reduce(
       (acc, { next_message_ids }) => [
@@ -27,7 +30,9 @@ export const createIntentMap = (messages: Message[] = [], intents: Intent[] = []
                         intent.value !== message.intent.value &&
                         message_id === message.message_id
                     )
-                    .map(message => intents.find(({ id }) => id === message.intent.value)),
+                    .map(message =>
+                      intents.find(({ id }) => id === message.intent.value)
+                    ),
                 ],
                 []
               ),
