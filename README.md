@@ -36,12 +36,14 @@ BOTMOCK_PROJECT_ID="@YOUR-BOTMOCK-PROJECT-ID"
 LUIS_ENDPOINT_KEY="@YOUR-LUIS-ENDPOINT_KEY"
 ```
 
-> The last two fields should be obtainable by visiting "Application Settings" in the luis.ai dashboard.
+> The last field (also called "Authoring Key") should be obtainable by visiting settings in the luis.ai dashboard.
 
 Start the HTTP server:
 
 ```shell
 npm start
 ```
+
+Find the newly created luis.ai project in the dashboard; hit "train" and then "publish".
 
 Open Bot Framework Emulator and point it to `http://localhost:8080/messages`.
