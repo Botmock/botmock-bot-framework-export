@@ -15,17 +15,17 @@ type Utterance = {
   }[];
 };
 
-type Intent = {
+export type Intent = {
   id: string;
   name: string;
   utterances: Utterance[];
 };
 
-type Entity = {
-  id: string;
-  name: string;
-  data: { value: string; synonyms: string[] }[];
-};
+// type Entity = {
+//   id: string;
+//   name: string;
+//   data: { value: string; synonyms: string[] }[];
+// };
 
 type LuisImportResponse = string | { error: Error };
 
@@ -68,9 +68,9 @@ export default class Bot extends ActivityHandler {
           "Content-Type": "application/json",
         },
       })).json();
-      // store the mapping of message id -> intentful in-neighbor connection ids
-      // to produce correct bot responses in the context of conversation
-      this.intentMap = createIntentMap(board.messages);
+      // store the mapping of message id -> in-neighbor intents
+      // to later produce correct bot responses in the context of conversation
+      this.intentMap = createIntentMap(board.messages, intents);
       const res: LuisImportResponse = await this.seedLuis(intents);
       if (typeof res !== "string") {
         throw res.error;
@@ -87,9 +87,14 @@ export default class Bot extends ActivityHandler {
     );
     // create handler for all incoming messages
     this.onMessage(async (ctx, next) => {
-      const intent: string | void = await this.getIntentFromContext(ctx);
-      if (typeof intent !== "undefined") {
-        // ..
+      const intentName: string | void = await this.getIntentFromContext(ctx);
+      if (typeof intentName !== "undefined") {
+        const relevantMessages = Array.from(this.intentMap)
+          .filter(([messageId, intents]) => {
+            return intents.some(intent => intent.name === intentName)
+          })
+          .map(([messageId]) => messageId);
+        // console.log(relevantMessages);
       } else {
         await ctx.sendActivity(
           `"${ctx.activity.text}" does not match any intent.`
@@ -127,7 +132,7 @@ export default class Bot extends ActivityHandler {
   // seed the Luis service with intents and entities from the Botmock project
   private async seedLuis(
     nativeIntents: Partial<Intent>[],
-    nativeEntities?: Entity[]
+    // nativeEntities?: Entity[]
   ): Promise<any> {
     // const entities = nativeEntities.map(({ name }) => ({ name, roles: [] }));
     const name = String(Math.floor(Math.random() * 1e5));
