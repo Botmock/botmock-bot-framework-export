@@ -44,6 +44,4 @@ Start the HTTP server:
 npm start
 ```
 
-Find the newly created luis.ai project in the dashboard; hit "train" and then "publish".
-
 Open Bot Framework Emulator and point it to `http://localhost:8080/messages`.

@@ -32,7 +32,14 @@ type LuisImportResponse = string | { error: Error };
 
 type LuisTrainResponse =
   | { statusId: number; status: string }
-  | { error: Error };
+  | { error?: Error };
+
+// type LuisPublishResponse = {
+//   endpointUrl: string;
+//   subscriptionKey?: string;
+//   endpointRegion: "westus" | "westeurope" | "australiaeast";
+//   isStaging: boolean;
+// };
 
 const BOTMOCK_API_URL = "https://app.botmock.com/api";
 const LUIS_API_URL = "https://westus.api.cognitive.microsoft.com/luis/api/v2.0";
@@ -82,8 +89,10 @@ export default class Bot extends ActivityHandler {
       if (typeof res !== "string") {
         throw res.error;
       }
+      // TODO: solve "queued" status blocking publish
       await this.trainLuis(res, LUIS_VERSION_ID);
-      emitter.emit("train-complete");
+      emitter.emit("training-complete");
+      // await this.publishLuis(res, LUIS_VERSION_ID);
       // create instance of the recognized from newly-created app id
       this.recognizer = new LuisRecognizer(
         {
@@ -136,9 +145,11 @@ export default class Bot extends ActivityHandler {
   // recognize the intent from the turn context
   private async getIntentFromContext(ctx: TurnContext): Promise<string | void> {
     const { intents } = await this.recognizer.recognize(ctx);
-    const [topIntent] = Object.keys(intents).sort(
-      (prevKey, curKey) => intents[curKey].score - intents[prevKey].score
-    );
+    const [topIntent] = Object.keys(intents)
+      .filter(name => intents[name].score >= 0.98)
+      .sort(
+        (prevKey, curKey) => intents[curKey].score - intents[prevKey].score
+      );
     return topIntent;
   }
 
@@ -194,4 +205,23 @@ export default class Bot extends ActivityHandler {
       },
     })).json();
   }
+
+  // publish the luis model
+  // private async publishLuis(
+  //   appId: string,
+  //   versionId: string
+  // ): Promise<LuisPublishResponse> {
+  //   const url = `${LUIS_API_URL}/apps/${appId}/publish`;
+  //   return await (await fetch(url, {
+  //     method: "POST",
+  //     headers: {
+  //       "Ocp-Apim-Subscription-Key": process.env.LUIS_ENDPOINT_KEY,
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({
+  //       versionId,
+  //       isStaging: false,
+  //     }),
+  //   })).json();
+  // }
 }
