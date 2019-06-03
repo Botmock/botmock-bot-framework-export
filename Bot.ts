@@ -85,15 +85,11 @@ export default class Bot extends ActivityHandler {
       },
       { includeAllIntents: true, log: true, staging: false }
     );
-    // create handler for all incoming messages; provide suitable response for
-    // identified intents
+    // create handler for all incoming messages
     this.onMessage(async (ctx, next) => {
-      const intent = await this.getIntentFromContext(ctx);
-      // if there is an intent in this context, find all messages that have this
-      // intent as an in-neighbor
+      const intent: string | void = await this.getIntentFromContext(ctx);
       if (typeof intent !== "undefined") {
-        // TODO: produce string of messages from name of intent
-        console.log(this.intentMap);
+        // ..
       } else {
         await ctx.sendActivity(
           `"${ctx.activity.text}" does not match any intent.`
@@ -115,6 +111,7 @@ export default class Bot extends ActivityHandler {
       for (const member of ctx.activity.membersRemoved) {
         await ctx.sendActivity(`${member.id} has left the conversation.`);
       }
+      await next();
     });
   }
 
@@ -124,7 +121,6 @@ export default class Bot extends ActivityHandler {
     const [topIntent] = Object.keys(intents).sort(
       (prevKey, curKey) => intents[curKey].score - intents[prevKey].score
     );
-    console.log(topIntent);
     return topIntent;
   }
 
@@ -146,7 +142,9 @@ export default class Bot extends ActivityHandler {
         })),
       ];
     }, []);
-    // console.log(utterances);
+    if (utterances.length < 10) {
+      emitter.emit("few-utterances");
+    }
     const body = {
       ...templates.luisAppStructure,
       name,

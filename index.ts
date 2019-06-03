@@ -17,8 +17,10 @@ try {
     projectId: process.env.BOTMOCK_PROJECT_ID,
     boardId: process.env.BOTMOCK_BOARD_ID,
   });
-  // TODO: ..
-  emitter.on("few-utterances", (intent: {}) => {});
+  emitter.on("few-utterances", () => {
+    console.warn(`There are too few utterances for one or more intents.
+Add >= 10 utterances for each intent to prevent training failure.`);
+  });
   // wait until luis.ai model generation has completed before listening on port
   emitter.on("seed-complete", () => {
     server.listen(
