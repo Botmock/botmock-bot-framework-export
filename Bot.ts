@@ -146,7 +146,7 @@ export default class Bot extends ActivityHandler {
   private async getIntentFromContext(ctx: TurnContext): Promise<string | void> {
     const { intents } = await this.recognizer.recognize(ctx);
     const [topIntent] = Object.keys(intents)
-      .filter(name => intents[name].score >= 0.98)
+      .filter(name => intents[name].score >= 0.8)
       .sort(
         (prevKey, curKey) => intents[curKey].score - intents[prevKey].score
       );
