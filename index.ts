@@ -50,7 +50,6 @@ Visit the luis.ai dashboard and publish ${projectName}`);
       server.post(
         "/messages",
         (req: WebRequest, res: WebResponse): void => {
-          // console.log(req);
           adapter.processActivity(req, res, async ctx => {
             await bot.run(ctx);
           });
