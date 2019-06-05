@@ -1,5 +1,7 @@
-import { ActivityHandler, TurnContext } from "botbuilder";
+// import { BlobStorage } from "botbuilder-azure";
 import { LuisRecognizer, LuisRecognizerTelemetryClient } from "botbuilder-ai";
+import { ActivityHandler, TurnContext } from "botbuilder";
+import delay from "delay";
 import uuid from "uuid/v4";
 import fetch from "node-fetch";
 import EventEmitter from "events";
@@ -85,14 +87,15 @@ export default class Bot extends ActivityHandler {
       // store the mapping of message id -> in-neighbor intents to later produce
       // correct bot responses in the context of conversation
       this.intentMap = createIntentMap(board.messages, intents);
-      const res: LuisImportResponse = await this.seedLuis(intents, entities);
+      const res: LuisImportResponse = await this.seedLuis(intents);
       if (typeof res !== "string") {
         throw res.error;
       }
-      // TODO: solve "queued" status blocking publish
       await this.trainLuis(res, LUIS_VERSION_ID);
+      await delay(8 * 1000);
+      // TODO: solve "queued" status blocking publish automation
+      // const res_ = await this.publishLuis(res, LUIS_VERSION_ID);
       emitter.emit("training-complete");
-      // await this.publishLuis(res, LUIS_VERSION_ID);
       // create instance of the recognized from newly-created app id
       this.recognizer = new LuisRecognizer(
         {
@@ -105,6 +108,7 @@ export default class Bot extends ActivityHandler {
       this.onMessage(async (ctx, next) => {
         const intentName: string | void = await this.getIntentFromContext(ctx);
         if (typeof intentName !== "undefined") {
+          // send a response for each message following this intent
           Array.from(this.intentMap)
             .filter(([messageId, intents]) =>
               intents.some(intent => intent.name === intentName)
@@ -144,21 +148,29 @@ export default class Bot extends ActivityHandler {
 
   // recognize the intent from the turn context
   private async getIntentFromContext(ctx: TurnContext): Promise<string | void> {
-    const { intents } = await this.recognizer.recognize(ctx);
-    const [topIntent] = Object.keys(intents)
-      .filter(name => intents[name].score >= 0.8)
-      .sort(
-        (prevKey, curKey) => intents[curKey].score - intents[prevKey].score
-      );
-    return topIntent;
+    try {
+      const { intents } = await this.recognizer.recognize(ctx);
+      const [topIntent] = Object.keys(intents)
+        .filter(name => intents[name].score >= 0.8)
+        .sort(
+          (prevKey, curKey) => intents[curKey].score - intents[prevKey].score
+        );
+      return topIntent;
+    } catch (err) {
+      emitter.emit("error", err);
+      const { topScoringIntent = {} } = err.body;
+      if (topScoringIntent.intent && topScoringIntent.score >= 0.8) {
+        return topScoringIntent.intent;
+      }
+    }
   }
 
   // seed the Luis service with intents and entities from the Botmock project
   private async seedLuis(
-    nativeIntents: Partial<Intent>[],
-    nativeEntities?: Entity[]
+    nativeIntents: Partial<Intent>[]
+    // nativeEntities?: Entity[]
   ): Promise<any> {
-    const entities = nativeEntities.map(({ name }) => ({ name, roles: [] }));
+    // const entities = nativeEntities.map(({ name }) => ({ name, roles: [] }));
     const intents = nativeIntents.map(({ name }) => ({ name }));
     const utterances = nativeIntents.reduce((acc, intent) => {
       return [
@@ -173,12 +185,13 @@ export default class Bot extends ActivityHandler {
     if (utterances.length < 10) {
       emitter.emit("few-utterances");
     }
+    const name = `project-${uuid()}`;
     const body = {
       ...templates.luisAppStructure,
-      name: uuid(),
+      name,
       intents,
       utterances,
-      entities,
+      // entities,
     };
     const url = `${LUIS_API_URL}/apps/import`;
     return await (await fetch(url, {
