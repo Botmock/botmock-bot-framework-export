@@ -44,4 +44,6 @@ Start the HTTP server:
 npm start
 ```
 
+Find the created app in Luis.ai and publish it.
+
 Open Bot Framework Emulator and point it to `http://localhost:8080/messages`.
