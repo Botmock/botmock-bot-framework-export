@@ -29,18 +29,20 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@types/node-fetch": "2.3.4",
     "botbuilder": "4.4.0",
     "botbuilder-ai": "4.4.0",
     "botmock": "1.2.0",
+    "delay": "4.2.0",
     "dotenv": "8.0.0",
     "node-fetch": "2.6.0",
-    "restify": "8.3.2",
+    "ora": "3.4.0",
+    "restify": "8.3.3",
     "uuid": "3.3.2"
   },
   "devDependencies": {
     "@types/jest": "^24.0.13",
-    "@types/node": "12.0.3",
+    "@types/node": "12.0.7",
+    "@types/node-fetch": "2.3.5",
     "jest": "24.8.0",
     "ts-jest": "^24.0.2",
     "ts-node": "8.2.0",
