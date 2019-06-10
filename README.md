@@ -1,4 +1,4 @@
-# botmock Microsoft Bot Framework Integration
+# Botmock Microsoft Bot Framework Integration
 
 Easily utilize Botmock's Developer Handoff functionality to use conversational design data with Microsoft's Bot Framework and Azure Bot services.
 
