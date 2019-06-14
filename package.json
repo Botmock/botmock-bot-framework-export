@@ -21,7 +21,11 @@
   },
   "jest": {
     "preset": "ts-jest",
-    "verbose": false
+    "globals": {
+      "ts-jest": {
+        "tsConfig": "tsconfig.json"
+      }
+    }
   },
   "repository": {
     "type": "git",
