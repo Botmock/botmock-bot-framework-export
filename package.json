@@ -29,7 +29,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Botmock/botmock-botframework-export-export.git"
+    "url": "git+https://github.com/Botmock/botmock-botframework-export.git"
   },
   "license": "MIT",
   "dependencies": {
