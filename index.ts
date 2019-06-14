@@ -1,5 +1,5 @@
 if (process.env.NODE_ENV === "test") {
-  // necessaray for ts-jest
+  // necessary for ts-jest
   (window as any).global = window;
 }
 
