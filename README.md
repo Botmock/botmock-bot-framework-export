@@ -65,4 +65,4 @@ Found bugs or have some ideas to improve this integration? We'd love to to hear 
 *NOTE: Make sure to leave any sensitive information out of an issue when reporting a bug with imagery or copying and pasting error data. We want to make sure all your info is safe!*
 
 ## License
-Botmock Dialogflow Export is copyright © 2019 Botmock. It is free software, and may be redistributed under the terms specified in the LICENSE file.
+Botmock Microsoft Bot Framework is copyright © 2019 Botmock. It is free software, and may be redistributed under the terms specified in the LICENSE file.
