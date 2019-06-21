@@ -1,11 +1,6 @@
-if (process.env.NODE_ENV === "test") {
-  // necessary for ts-jest
-  (window as any).global = window;
-}
-
+import "dotenv/config";
 import { BotFrameworkAdapter, WebRequest, WebResponse } from "botbuilder";
 import { createServer } from "restify";
-import { config } from "dotenv";
 import ora from "ora";
 import Bot, { emitter } from "./Bot";
 
@@ -13,9 +8,7 @@ const PORT = process.env.PORT || 8080;
 const server = createServer();
 
 try {
-  // bring the env variables into scope
-  config();
-  const spinner = ora("building app..").start();
+  const spinner = ora("Building app..").start();
   const adapter = new BotFrameworkAdapter({});
   const bot = new Bot({
     token: process.env.BOTMOCK_TOKEN,
@@ -38,23 +31,17 @@ Add >= 10 utterances for each intent to prevent training failure.`);
       spinner.stop();
       console.log(`App built. Training complete.
 Visit the luis.ai dashboard and publish ${projectName}`);
-      server.listen(
-        PORT,
-        (): void => {
-          console.log(
-            `Finally, connect Bot Framework Emulator to http://localhost:${PORT}/messages`
-          );
-        }
-      );
+      server.listen(PORT, (): void => {
+        console.log(
+          `Finally, connect Bot Framework Emulator to http://localhost:${PORT}/messages`
+        );
+      });
       // handle post requests made to /messages
-      server.post(
-        "/messages",
-        (req: WebRequest, res: WebResponse): void => {
-          adapter.processActivity(req, res, async ctx => {
-            await bot.run(ctx);
-          });
-        }
-      );
+      server.post("/messages", (req: WebRequest, res: WebResponse): void => {
+        adapter.processActivity(req, res, async ctx => {
+          await bot.run(ctx);
+        });
+      });
     }
   );
 } catch (err) {
