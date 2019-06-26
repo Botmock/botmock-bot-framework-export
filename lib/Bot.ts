@@ -1,12 +1,12 @@
 // import { BlobStorage } from "botbuilder-azure";
 import { LuisRecognizer, LuisRecognizerTelemetryClient } from "botbuilder-ai";
 import { ActivityHandler, TurnContext } from "botbuilder";
+import { createIntentMap } from "@botmock-api/utils";
 import delay from "delay";
 import uuid from "uuid/v4";
 import fetch from "node-fetch";
 import EventEmitter from "events";
 import * as templates from "./templates";
-import { createIntentMap, IntentMap } from "./utils";
 
 type Utterance = {
   text: string;
@@ -36,13 +36,6 @@ type LuisTrainResponse =
   | { statusId: number; status: string }
   | { error?: Error };
 
-// type LuisPublishResponse = {
-//   endpointUrl: string;
-//   subscriptionKey?: string;
-//   endpointRegion: "westus" | "westeurope" | "australiaeast";
-//   isStaging: boolean;
-// };
-
 const BOTMOCK_API_URL = "https://app.botmock.com/api";
 const LUIS_API_URL = "https://westus.api.cognitive.microsoft.com/luis/api/v2.0";
 const LUIS_VERSION_ID = "0.2";
@@ -59,7 +52,7 @@ export const emitter = new EventEmitter();
 // export class extending botbuilder's event-emitting class
 export default class Bot extends ActivityHandler {
   private recognizer: LuisRecognizerTelemetryClient;
-  private intentMap: IntentMap;
+  private intentMap: any;
   private luisAppId: string;
 
   // on boot, seed luis with intent data from the connected project and add activity
@@ -84,15 +77,13 @@ export default class Bot extends ActivityHandler {
           }
         })
       );
-      // store the mapping of message id -> in-neighbor intents to later produce
-      // correct bot responses in the context of conversation
-      this.intentMap = createIntentMap(board.messages, intents);
       const res: LuisImportResponse = await this.seedLuis(intents);
       if (typeof res !== "string") {
         throw res.error;
       }
       await this.trainLuis(res, LUIS_VERSION_ID);
-      await delay(8 * 1000);
+      const FIVE_SECONDS = 5 * 1000;
+      await delay(FIVE_SECONDS);
       // TODO: solve "queued" status blocking publish automation
       // const res_ = await this.publishLuis(res, LUIS_VERSION_ID);
       emitter.emit("training-complete");
@@ -104,14 +95,20 @@ export default class Bot extends ActivityHandler {
         },
         { includeAllIntents: true, log: true, staging: false }
       );
+      // create mapping of message ids to array of connected intent ids
+      this.intentMap = createIntentMap(board.messages, intents);
       // create handler for all incoming messages
       this.onMessage(async (ctx, next) => {
         const intentName: string | void = await this.getIntentFromContext(ctx);
         if (typeof intentName !== "undefined") {
           // send a response for each message following this intent
           Array.from(this.intentMap)
-            .filter(([messageId, intents]) =>
-              intents.some(intent => intent.name === intentName)
+            .filter(([messageId, intentIds]) =>
+              intentIds.some(
+                id =>
+                  (intents.find(intent => intent.id === id) || {}).name ===
+                  intentName
+              )
             )
             .map(([messageId]) => messageId)
             .forEach(async id => {

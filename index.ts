@@ -2,7 +2,7 @@ import "dotenv/config";
 import { BotFrameworkAdapter, WebRequest, WebResponse } from "botbuilder";
 import { createServer } from "restify";
 import ora from "ora";
-import Bot, { emitter } from "./Bot";
+import Bot, { emitter } from "./lib/Bot";
 
 const PORT = process.env.PORT || 8080;
 const server = createServer();
@@ -33,7 +33,7 @@ Add >= 10 utterances for each intent to prevent training failure.`);
 Visit the luis.ai dashboard and publish ${projectName}`);
       server.listen(PORT, (): void => {
         console.log(
-          `Finally, connect Bot Framework Emulator to http://localhost:${PORT}/messages`
+          `Connect Bot Framework Emulator to http://localhost:${PORT}/messages`
         );
       });
       // handle post requests made to /messages

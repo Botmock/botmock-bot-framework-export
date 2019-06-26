@@ -33,6 +33,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@botmock-api/utils": "2.0.0",
     "botbuilder": "4.4.0",
     "botbuilder-ai": "4.4.0",
     "botmock": "1.2.0",
