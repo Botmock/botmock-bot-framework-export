@@ -1,12 +1,16 @@
-// import { BlobStorage } from "botbuilder-azure";
 import { LuisRecognizer, LuisRecognizerTelemetryClient } from "botbuilder-ai";
 import { ActivityHandler, TurnContext } from "botbuilder";
 import { createIntentMap } from "@botmock-api/utils";
-import delay from "delay";
 import uuid from "uuid/v4";
 import fetch from "node-fetch";
 import EventEmitter from "events";
 import * as templates from "./templates";
+
+export type Intent = {
+  id: string;
+  name: string;
+  utterances: Utterance[];
+};
 
 type Utterance = {
   text: string;
@@ -16,12 +20,6 @@ type Utterance = {
     entity: string;
     start_index: number;
   }[];
-};
-
-export type Intent = {
-  id: string;
-  name: string;
-  utterances: Utterance[];
 };
 
 type Entity = {
@@ -77,14 +75,13 @@ export default class Bot extends ActivityHandler {
           }
         })
       );
-      console.log(entities.map(e => e.data));
       const res: LuisImportResponse = await this.seedLuis(intents, entities);
       if (typeof res !== "string") {
         throw res.error;
       }
       await this.trainLuis(res, LUIS_VERSION_ID);
-      const FIVE_SECONDS = 5 * 1000;
-      await delay(FIVE_SECONDS);
+      // const FIVE_SECONDS = 5 * 1000;
+      // await delay(FIVE_SECONDS);
       emitter.emit("training-complete");
       // create instance of the recognized from newly-created app id
       this.recognizer = new LuisRecognizer(
@@ -174,13 +171,7 @@ export default class Bot extends ActivityHandler {
         ...intent.utterances.map(utterance => ({
           text: utterance.text,
           intent: intent.name,
-          // entities: nativeEntities
-          //   .filter(
-          //     (entity: any) =>
-          //       entity.data.synonyms &&
-          //       entity.data.synonyms.includes(utterance.text)
-          //   )
-          //   .map(entity => entity.name),
+          entities: [],
         })),
       ];
     }, []);
