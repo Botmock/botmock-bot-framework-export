@@ -77,15 +77,14 @@ export default class Bot extends ActivityHandler {
           }
         })
       );
-      const res: LuisImportResponse = await this.seedLuis(intents);
+      console.log(entities.map(e => e.data));
+      const res: LuisImportResponse = await this.seedLuis(intents, entities);
       if (typeof res !== "string") {
         throw res.error;
       }
       await this.trainLuis(res, LUIS_VERSION_ID);
       const FIVE_SECONDS = 5 * 1000;
       await delay(FIVE_SECONDS);
-      // TODO: solve "queued" status blocking publish automation
-      // const res_ = await this.publishLuis(res, LUIS_VERSION_ID);
       emitter.emit("training-complete");
       // create instance of the recognized from newly-created app id
       this.recognizer = new LuisRecognizer(
@@ -164,10 +163,10 @@ export default class Bot extends ActivityHandler {
 
   // seed the Luis service with intents and entities from the Botmock project
   private async seedLuis(
-    nativeIntents: Partial<Intent>[]
-    // nativeEntities?: Entity[]
+    nativeIntents: Partial<Intent>[],
+    nativeEntities?: Entity[]
   ): Promise<any> {
-    // const entities = nativeEntities.map(({ name }) => ({ name, roles: [] }));
+    const entities = nativeEntities.map(({ name }) => ({ name, roles: [] }));
     const intents = nativeIntents.map(({ name }) => ({ name }));
     const utterances = nativeIntents.reduce((acc, intent) => {
       return [
@@ -175,7 +174,13 @@ export default class Bot extends ActivityHandler {
         ...intent.utterances.map(utterance => ({
           text: utterance.text,
           intent: intent.name,
-          entities: [],
+          // entities: nativeEntities
+          //   .filter(
+          //     (entity: any) =>
+          //       entity.data.synonyms &&
+          //       entity.data.synonyms.includes(utterance.text)
+          //   )
+          //   .map(entity => entity.name),
         })),
       ];
     }, []);
@@ -188,7 +193,7 @@ export default class Bot extends ActivityHandler {
       name,
       intents,
       utterances,
-      // entities,
+      entities,
     };
     const url = `${LUIS_API_URL}/apps/import`;
     return await (await fetch(url, {

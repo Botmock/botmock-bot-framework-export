@@ -1,14 +1,15 @@
 import "dotenv/config";
+import os from "os";
+import ora from "ora";
 import { BotFrameworkAdapter, WebRequest, WebResponse } from "botbuilder";
 import { createServer } from "restify";
-import ora from "ora";
 import Bot, { emitter } from "./lib/Bot";
 
 const PORT = process.env.PORT || 8080;
 const server = createServer();
 
 try {
-  const spinner = ora("Building app..").start();
+  const spinner = ora(`Building app.. ${os.EOL}`).start();
   const adapter = new BotFrameworkAdapter({});
   const bot = new Bot({
     token: process.env.BOTMOCK_TOKEN,
@@ -22,7 +23,7 @@ try {
     }
   });
   emitter.on("few-utterances", () => {
-    console.warn(`There are too few utterances for one or more intents.
+    console.warn(`${os.EOL}There are too few utterances for one or more intents.
 Add >= 10 utterances for each intent to prevent training failure.`);
   });
   emitter.on(
