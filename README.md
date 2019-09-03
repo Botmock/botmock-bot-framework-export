@@ -42,7 +42,7 @@ BOTMOCK_PROJECT_ID=@YOUR-BOTMOCK-PROJECT-ID
 LUIS_ENDPOINT_KEY=@YOUR-LUIS-ENDPOINT_KEY
 ```
 
-> The last field (also called "Authoring Key") should be obtainable by visiting settings in the luis.ai dashboard.
+> The last field (also called "Authoring Key") should be obtainable by visiting "Application Settings" in the [luis.ai dashboard](https://www.luis.ai/applications).
 
 Start the HTTP server:
 

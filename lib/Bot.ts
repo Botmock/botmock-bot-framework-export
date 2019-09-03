@@ -52,14 +52,13 @@ export default class Bot extends ActivityHandler {
   private recognizer: LuisRecognizerTelemetryClient;
   private intentMap: any;
   private luisAppId: string;
-
   // on boot, seed luis with intent data from the connected project and add activity
   // event handlers
   constructor({ teamId, projectId, boardId, token }: Readonly<UserConfig>) {
     super();
     (async () => {
       const baseURL = `${BOTMOCK_API_URL}/teams/${teamId}/projects/${projectId}`;
-      // make api requests for intents, entities, and the board
+      // make botmock api requests for intents, entities, and the board
       const [intents, entities, board] = await Promise.all(
         ["intents", "entities", `boards/${boardId}`].map(async path => {
           const res = await (await fetch(`${baseURL}/${path}`, {
@@ -75,18 +74,15 @@ export default class Bot extends ActivityHandler {
           }
         })
       );
-      const res: LuisImportResponse = await this.seedLuis(intents, entities);
-      if (typeof res !== "string") {
-        throw res.error;
-      }
-      await this.trainLuis(res, LUIS_VERSION_ID);
-      // const FIVE_SECONDS = 5 * 1000;
-      // await delay(FIVE_SECONDS);
+      // const res: LuisImportResponse = await this.seedLuis(intents, entities);
+      // if (typeof res !== "string") {
+      //   throw res.error;
+      // }
+      // await this.trainLuis(res, LUIS_VERSION_ID);
       emitter.emit("training-complete");
-      // create instance of the recognized from newly-created app id
       this.recognizer = new LuisRecognizer(
         {
-          applicationId: res,
+          applicationId: process.argv[2],
           endpointKey: process.env.LUIS_ENDPOINT_KEY,
         },
         { includeAllIntents: true, log: true, staging: false }

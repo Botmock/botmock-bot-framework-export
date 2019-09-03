@@ -11,6 +11,12 @@ import {
 import { createServer } from "restify";
 import Bot, { emitter } from "./lib/Bot";
 
+try {
+  assert.notStrictEqual(typeof process.argv[2], "undefined");
+} catch (_) {
+  throw "requires luis app id as first argument; see readme for more info";
+}
+
 // check that the node version meets the minimum required
 try {
   const MIN_NODE_VERSION = 101600;
