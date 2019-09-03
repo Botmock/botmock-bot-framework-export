@@ -1,6 +1,6 @@
 # Botmock Microsoft Bot Framework Integration
 
-[![Build status](https://ci.appveyor.com/api/projects/status/40b85tj9tbyqb6c0?svg=true)](https://ci.appveyor.com/project/nonnontrivial/botmock-botframework-export)
+[![Build status](https://ci.appveyor.com/api/projects/status/tgof5738pfqppis7?svg=true)](https://ci.appveyor.com/project/nonnontrivial/botmock-botframework-export)
 
 Easily utilize Botmock's Developer Handoff functionality to use conversational design data with Microsoft's Bot Framework and Azure Bot services.
 
