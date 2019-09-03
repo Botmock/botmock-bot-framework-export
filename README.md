@@ -6,8 +6,6 @@ Easily utilize Botmock's Developer Handoff functionality to use conversational d
 - Documentation (Coming Soon)
 - [Support Email](mailto:help@botmock.com)
 
-## Installation
-
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/en/) >= 10.16.x
@@ -20,7 +18,7 @@ node --version
 
 - [Luis.ai](https://www.luis.ai) account
 
-### Guide
+## Installation Guide
 
 Clone this repository and install dependencies:
 
@@ -32,7 +30,7 @@ cd botmock-botframework-export
 npm i
 ```
 
-Create `.env` and fill in values for the following:
+Create `.env` in the created directory and fill in values for the following:
 
 ```shell
 BOTMOCK_TOKEN=@YOUR-BOTMOCK-TOKEN
@@ -44,13 +42,11 @@ LUIS_ENDPOINT_KEY=@YOUR-LUIS-ENDPOINT_KEY
 
 > The last field (also called "Authoring Key") should be obtainable by visiting "Application Settings" in the [luis.ai dashboard](https://www.luis.ai/applications).
 
-Start the HTTP server:
+Start the HTTP server, passing the Luis application id as the first argument:
 
 ```shell
-npm start
+npm start -- your-luis-application-id
 ```
-
-<!-- Find the created app in the Luis.ai dashboard and publish it. -->
 
 Open Bot Framework Emulator and point it to `http://localhost:8080/messages`.
 
