@@ -6,9 +6,11 @@ Easily utilize Botmock's Developer Handoff functionality to use conversational d
 - Documentation (Coming Soon)
 - [Support Email](mailto:help@botmock.com)
 
-## Prerequisites
+## Installation
 
-- [Node.js](https://nodejs.org/en/) >= 10.15.x
+### Prerequisites
+
+- [Node.js](https://nodejs.org/en/) >= 10.16.x
 
 ```shell
 node --version
@@ -18,7 +20,7 @@ node --version
 
 - [Luis.ai](https://www.luis.ai) account
 
-## Guide
+### Guide
 
 Clone this repository and install dependencies:
 
@@ -30,17 +32,17 @@ cd botmock-botframework-export
 npm i
 ```
 
-Create `/.env` and fill in values for the following:
+Create `.env` and fill in values for the following:
 
 ```shell
-BOTMOCK_TOKEN="@YOUR-BOTMOCK-TOKEN"
-BOTMOCK_TEAM_ID="@YOUR-BOTMOCK-TEAM-ID"
-BOTMOCK_BOARD_ID="@YOUR-BOTMOCK-BOARD-ID"
-BOTMOCK_PROJECT_ID="@YOUR-BOTMOCK-PROJECT-ID"
-LUIS_ENDPOINT_KEY="@YOUR-LUIS-ENDPOINT_KEY"
+BOTMOCK_TOKEN=@YOUR-BOTMOCK-TOKEN
+BOTMOCK_TEAM_ID=@YOUR-BOTMOCK-TEAM-ID
+BOTMOCK_BOARD_ID=@YOUR-BOTMOCK-BOARD-ID
+BOTMOCK_PROJECT_ID=@YOUR-BOTMOCK-PROJECT-ID
+LUIS_ENDPOINT_KEY=@YOUR-LUIS-ENDPOINT_KEY
 ```
 
-> The last field (also called "Authoring Key") should be obtainable by visiting settings in the Luis.ai dashboard.
+> The last field (also called "Authoring Key") should be obtainable by visiting settings in the luis.ai dashboard.
 
 Start the HTTP server:
 
@@ -48,7 +50,7 @@ Start the HTTP server:
 npm start
 ```
 
-Find the created app in the Luis.ai dashboard and publish it.
+<!-- Find the created app in the Luis.ai dashboard and publish it. -->
 
 Open Bot Framework Emulator and point it to `http://localhost:8080/messages`.
 

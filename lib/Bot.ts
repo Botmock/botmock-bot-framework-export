@@ -211,23 +211,4 @@ export default class Bot extends ActivityHandler {
       },
     })).json();
   }
-
-  // publish the luis model
-  // private async publishLuis(
-  //   appId: string,
-  //   versionId: string
-  // ): Promise<LuisPublishResponse> {
-  //   const url = `${LUIS_API_URL}/apps/${appId}/publish`;
-  //   return await (await fetch(url, {
-  //     method: "POST",
-  //     headers: {
-  //       "Ocp-Apim-Subscription-Key": process.env.LUIS_ENDPOINT_KEY,
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({
-  //       versionId,
-  //       isStaging: false,
-  //     }),
-  //   })).json();
-  // }
 }
