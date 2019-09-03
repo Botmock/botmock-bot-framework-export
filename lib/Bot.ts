@@ -9,6 +9,7 @@ import {
   Intent,
   Utterance,
   Entity,
+  BatchAddLabelsResponse,
   LuisImportResponse,
   LuisTrainResponse,
 } from "./types";
@@ -56,6 +57,7 @@ export default class Bot extends ActivityHandler {
       const appId = process.argv[2];
       const { name } = await this.getLuisApplication(appId);
       emitter.emit("app-connection", name);
+      await this.addUtterances(appId, intents);
       try {
         // await this.trainLuis(appId, LUIS_VERSION_ID);
         emitter.emit("train");
@@ -140,8 +142,8 @@ export default class Bot extends ActivityHandler {
     }
   }
 
-  private async getLuisApplication(id: string): Promise<any> {
-    const res = await fetch(`${LUIS_API_URL}/apps/${id}`, {
+  private async getLuisApplication(appId: string): Promise<any> {
+    const res = await fetch(`${LUIS_API_URL}/apps/${appId}`, {
       headers: { "Ocp-Apim-Subscription-Key": process.env.LUIS_ENDPOINT_KEY },
     });
     if (!res.ok) {
@@ -151,44 +153,73 @@ export default class Bot extends ActivityHandler {
     return json;
   }
 
-  // seed the Luis service with intents and entities from the Botmock project
-  private async seedLuis(
-    nativeIntents: Partial<Intent>[],
-    nativeEntities?: Entity[]
-  ): Promise<any> {
-    const entities = nativeEntities.map(({ name }) => ({ name, roles: [] }));
-    const intents = nativeIntents.map(({ name }) => ({ name }));
-    const utterances = nativeIntents.reduce((acc, intent) => {
+  // see https://westus.dev.cognitive.microsoft.com/docs/services/5890b47c39e2bb17b84a55ff/operations/5890b47c39e2bb052c5b9c09
+  private async addUtterances(
+    appId: string,
+    intents: Intent[]
+  ): Promise<BatchAddLabelsResponse> {
+    const utterances = intents.reduce((acc, intent: Intent) => {
       return [
         ...acc,
         ...intent.utterances.map(utterance => ({
           text: utterance.text,
-          intent: intent.name,
-          entities: [],
+          intentName: intent.name,
+          entityLabels: [],
         })),
       ];
     }, []);
-    if (utterances.length < 10) {
-      emitter.emit("few-utterances");
+    const res = await fetch(
+      `${LUIS_API_URL}/apps/${appId}/versions/${LUIS_VERSION_ID}/examples`,
+      {
+        method: "POST",
+        headers: { "Ocp-Apim-Subscription-Key": process.env.LUIS_ENDPOINT_KEY },
+        body: JSON.stringify(utterances),
+      }
+    );
+    if (!res.ok) {
+      throw res.statusText;
     }
-    const name = `project-${uuid()}`;
-    const body = {
-      ...templates.luisAppStructure,
-      name,
-      intents,
-      utterances,
-      entities,
-    };
-    const url = `${LUIS_API_URL}/apps/import`;
-    return await (await fetch(url, {
-      method: "POST",
-      headers: {
-        "Ocp-Apim-Subscription-Key": process.env.LUIS_ENDPOINT_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    })).json();
+    return await res.json();
   }
+
+  // seed the Luis service with intents and entities from the Botmock project
+  // private async seedLuis(
+  //   nativeIntents: Partial<Intent>[],
+  //   nativeEntities?: Entity[]
+  // ): Promise<any> {
+  //   const entities = nativeEntities.map(({ name }) => ({ name, roles: [] }));
+  //   const intents = nativeIntents.map(({ name }) => ({ name }));
+  //   const utterances = nativeIntents.reduce((acc, intent) => {
+  //     return [
+  //       ...acc,
+  //       ...intent.utterances.map(utterance => ({
+  //         text: utterance.text,
+  //         intent: intent.name,
+  //         entities: [],
+  //       })),
+  //     ];
+  //   }, []);
+  //   if (utterances.length < 10) {
+  //     emitter.emit("few-utterances");
+  //   }
+  //   const name = `project-${uuid()}`;
+  //   const body = {
+  //     ...templates.luisAppStructure,
+  //     name,
+  //     intents,
+  //     utterances,
+  //     entities,
+  //   };
+  //   const url = `${LUIS_API_URL}/apps/import`;
+  //   return await (await fetch(url, {
+  //     method: "POST",
+  //     headers: {
+  //       "Ocp-Apim-Subscription-Key": process.env.LUIS_ENDPOINT_KEY,
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify(body),
+  //   })).json();
+  // }
 
   // train the luis model
   private async trainLuis(

@@ -4,6 +4,8 @@ export type Intent = {
   utterances: Utterance[];
 };
 
+export type BatchAddLabelsResponse = {};
+
 export type Utterance = {
   text: string;
   variables: {
