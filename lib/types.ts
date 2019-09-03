@@ -4,7 +4,7 @@ export type Intent = {
   utterances: Utterance[];
 };
 
-export type BatchAddLabelsResponse = {};
+export type BatchAddLabelsResponse = { value: any; hasError: boolean }[];
 
 export type Utterance = {
   text: string;

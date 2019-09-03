@@ -4,7 +4,6 @@ import { createIntentMap } from "@botmock-api/utils";
 import uuid from "uuid/v4";
 import fetch from "node-fetch";
 import EventEmitter from "events";
-import * as templates from "./templates";
 import {
   Intent,
   Utterance,
@@ -18,7 +17,7 @@ const BOTMOCK_API_URL = "https://app.botmock.com/api";
 const LUIS_API_URL = "https://westus.api.cognitive.microsoft.com/luis/api/v2.0";
 const LUIS_VERSION_ID = "0.2";
 
-export interface UserConfig {
+interface UserConfig {
   token: string;
   teamId: string;
   projectId: string;
@@ -59,7 +58,7 @@ export default class Bot extends ActivityHandler {
       emitter.emit("app-connection", name);
       await this.addUtterances(appId, intents);
       try {
-        // await this.trainLuis(appId, LUIS_VERSION_ID);
+        // await this.trainLuis(appId);
         emitter.emit("train");
       } catch (_) {
         throw "failed to train model";
@@ -158,21 +157,32 @@ export default class Bot extends ActivityHandler {
     appId: string,
     intents: Intent[]
   ): Promise<BatchAddLabelsResponse> {
-    const utterances = intents.reduce((acc, intent: Intent) => {
-      return [
+    const utterances = intents.reduce(
+      (acc, intent: Intent) => [
         ...acc,
         ...intent.utterances.map(utterance => ({
           text: utterance.text,
           intentName: intent.name,
-          entityLabels: [],
+          entityLabels: utterance.variables.map(variable => ({
+            entityName: "",
+            startCharIndex: "",
+            endCharIndex: "",
+          })),
         })),
-      ];
-    }, []);
+      ],
+      []
+    );
+    if (!utterances.length) {
+      return new Promise(resolve => resolve(null));
+    }
     const res = await fetch(
       `${LUIS_API_URL}/apps/${appId}/versions/${LUIS_VERSION_ID}/examples`,
       {
         method: "POST",
-        headers: { "Ocp-Apim-Subscription-Key": process.env.LUIS_ENDPOINT_KEY },
+        headers: {
+          "Ocp-Apim-Subscription-Key": process.env.LUIS_ENDPOINT_KEY,
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(utterances),
       }
     );
@@ -182,51 +192,9 @@ export default class Bot extends ActivityHandler {
     return await res.json();
   }
 
-  // seed the Luis service with intents and entities from the Botmock project
-  // private async seedLuis(
-  //   nativeIntents: Partial<Intent>[],
-  //   nativeEntities?: Entity[]
-  // ): Promise<any> {
-  //   const entities = nativeEntities.map(({ name }) => ({ name, roles: [] }));
-  //   const intents = nativeIntents.map(({ name }) => ({ name }));
-  //   const utterances = nativeIntents.reduce((acc, intent) => {
-  //     return [
-  //       ...acc,
-  //       ...intent.utterances.map(utterance => ({
-  //         text: utterance.text,
-  //         intent: intent.name,
-  //         entities: [],
-  //       })),
-  //     ];
-  //   }, []);
-  //   if (utterances.length < 10) {
-  //     emitter.emit("few-utterances");
-  //   }
-  //   const name = `project-${uuid()}`;
-  //   const body = {
-  //     ...templates.luisAppStructure,
-  //     name,
-  //     intents,
-  //     utterances,
-  //     entities,
-  //   };
-  //   const url = `${LUIS_API_URL}/apps/import`;
-  //   return await (await fetch(url, {
-  //     method: "POST",
-  //     headers: {
-  //       "Ocp-Apim-Subscription-Key": process.env.LUIS_ENDPOINT_KEY,
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify(body),
-  //   })).json();
-  // }
-
   // train the luis model
-  private async trainLuis(
-    appId: string,
-    versionId: string
-  ): Promise<LuisTrainResponse> {
-    const url = `${LUIS_API_URL}/apps/${appId}/versions/${versionId}/train`;
+  private async trainLuis(appId: string): Promise<LuisTrainResponse> {
+    const url = `${LUIS_API_URL}/apps/${appId}/versions/${LUIS_VERSION_ID}/train`;
     const res = await fetch(url, {
       method: "POST",
       headers: {
