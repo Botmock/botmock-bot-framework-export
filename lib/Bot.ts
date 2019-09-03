@@ -5,34 +5,13 @@ import uuid from "uuid/v4";
 import fetch from "node-fetch";
 import EventEmitter from "events";
 import * as templates from "./templates";
-
-export type Intent = {
-  id: string;
-  name: string;
-  utterances: Utterance[];
-};
-
-type Utterance = {
-  text: string;
-  variables: {
-    id: string;
-    name: string;
-    entity: string;
-    start_index: number;
-  }[];
-};
-
-type Entity = {
-  id: string;
-  name: string;
-  data: { value: string; synonyms: string[] }[];
-};
-
-type LuisImportResponse = string | { error: Error };
-
-type LuisTrainResponse =
-  | { statusId: number; status: string }
-  | { error?: Error };
+import {
+  Intent,
+  Utterance,
+  Entity,
+  LuisImportResponse,
+  LuisTrainResponse,
+} from "./types";
 
 const BOTMOCK_API_URL = "https://app.botmock.com/api";
 const LUIS_API_URL = "https://westus.api.cognitive.microsoft.com/luis/api/v2.0";
@@ -74,18 +53,18 @@ export default class Bot extends ActivityHandler {
           }
         )
       );
-      const { name } = await this.getLuisApplication(process.argv[2]);
-      emitter.emit("connection", name);
-      // console.log(app);
-      // const res: LuisImportResponse = await this.seedLuis(intents, entities);
-      // if (typeof res !== "string") {
-      //   throw res.error;
-      // }
-      // await this.trainLuis(res, LUIS_VERSION_ID);
-      emitter.emit("training-complete");
+      const appId = process.argv[2];
+      const { name } = await this.getLuisApplication(appId);
+      emitter.emit("app-connection", name);
+      try {
+        // await this.trainLuis(appId, LUIS_VERSION_ID);
+        emitter.emit("train");
+      } catch (_) {
+        throw "failed to train model";
+      }
       this.recognizer = new LuisRecognizer(
         {
-          applicationId: process.argv[2],
+          applicationId: appId,
           endpointKey: process.env.LUIS_ENDPOINT_KEY,
         },
         { includeAllIntents: true, log: true, staging: false }
@@ -140,10 +119,11 @@ export default class Bot extends ActivityHandler {
 
   // recognize the intent from the turn context
   private async getIntentFromContext(ctx: TurnContext): Promise<string | void> {
+    const SCORE_THRESHOLD = 0.8;
     try {
       const { intents } = await this.recognizer.recognize(ctx);
       const [topIntent] = Object.keys(intents)
-        .filter(name => intents[name].score >= 0.8)
+        .filter(name => intents[name].score >= SCORE_THRESHOLD)
         .sort(
           (prevKey, curKey) => intents[curKey].score - intents[prevKey].score
         );
@@ -151,7 +131,10 @@ export default class Bot extends ActivityHandler {
     } catch (err) {
       emitter.emit("error", err);
       const { topScoringIntent = {} } = err.body;
-      if (topScoringIntent.intent && topScoringIntent.score >= 0.8) {
+      if (
+        topScoringIntent.intent &&
+        topScoringIntent.score >= SCORE_THRESHOLD
+      ) {
         return topScoringIntent.intent;
       }
     }
@@ -213,12 +196,16 @@ export default class Bot extends ActivityHandler {
     versionId: string
   ): Promise<LuisTrainResponse> {
     const url = `${LUIS_API_URL}/apps/${appId}/versions/${versionId}/train`;
-    return await (await fetch(url, {
+    const res = await fetch(url, {
       method: "POST",
       headers: {
         "Ocp-Apim-Subscription-Key": process.env.LUIS_ENDPOINT_KEY,
         "Content-Type": "application/json",
       },
-    })).json();
+    });
+    if (!res.ok) {
+      throw res.statusText;
+    }
+    return await res.json();
   }
 }

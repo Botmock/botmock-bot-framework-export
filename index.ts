@@ -17,7 +17,6 @@ try {
   throw "requires luis app id as first argument; see readme for more info";
 }
 
-// check that the node version meets the minimum required
 try {
   const MIN_NODE_VERSION = 101600;
   const numericalNodeVersion = parseInt(
@@ -48,16 +47,20 @@ try {
     projectId: process.env.BOTMOCK_PROJECT_ID,
     boardId: process.env.BOTMOCK_BOARD_ID,
   });
-  emitter.on("connection", (name: string) => {
-    console.info(`connected to project ${name}`);
+  const ROUTE = "/messages";
+  const PORT = process.env.PORT || 8080;
+  // when app data has been fetch, alert the user
+  emitter.on("app-connection", (name: string) => {
+    console.info(`connected to project "${name}".`);
   });
-  emitter.on("training-complete", (projectName: string) => {
-    const PORT = process.env.PORT || 8080;
+  // when the app has been trained, begin listening on the port,
+  // and process post requests made to the messages route
+  emitter.on("train", () => {
+    console.info("trained.");
     server.listen(PORT, (err: Error | null): void => {
-      console.info(`Connect emulator to http://localhost:${PORT}/messages`);
+      console.info(`connect emulator to http://localhost:${PORT}/messages`);
     });
-    // handle post requests made to /messages
-    server.post("/messages", (req: WebRequest, res: WebResponse): void => {
+    server.post(ROUTE, (req: WebRequest, res: WebResponse): void => {
       adapter.processActivity(req, res, async (ctx: TurnContext) => {
         await bot.run(ctx);
       });
