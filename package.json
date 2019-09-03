@@ -33,11 +33,13 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@azure/cognitiveservices-luis-authoring": "3.0.1",
     "@botmock-api/utils": "2.0.0",
     "botbuilder": "4.5.3",
     "botbuilder-ai": "4.5.3",
     "botmock": "1.2.0",
     "dotenv": "8.1.0",
+    "express": "4.17.1",
     "node-fetch": "2.6.0",
     "restify": "8.3.3",
     "uuid": "3.3.2"

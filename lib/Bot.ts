@@ -1,6 +1,8 @@
 import { LuisRecognizer, LuisRecognizerTelemetryClient } from "botbuilder-ai";
 import { ActivityHandler, TurnContext } from "botbuilder";
 import { createIntentMap } from "@botmock-api/utils";
+import AuthoringClient from "@azure/cognitiveservices-luis-authoring";
+// import retry from "@zeit/fetch-retry";
 import uuid from "uuid/v4";
 import fetch from "node-fetch";
 import EventEmitter from "events";
@@ -24,6 +26,7 @@ interface UserConfig {
   boardId: string;
 }
 
+// const retryFetch = retry(fetch);
 export const emitter = new EventEmitter();
 
 // export class extending botbuilder's event-emitting class
@@ -33,6 +36,7 @@ export default class Bot extends ActivityHandler {
   private luisAppId: string;
   constructor({ teamId, projectId, boardId, token }: Readonly<UserConfig>) {
     super();
+    // const client = new AuthoringClient(new TokenCredentials())
     // get resources from botmock api and add them to existing luis app
     (async () => {
       const baseURL = `${BOTMOCK_API_URL}/teams/${teamId}/projects/${projectId}`;
@@ -56,6 +60,7 @@ export default class Bot extends ActivityHandler {
       const appId = process.argv[2];
       const { name } = await this.getLuisApplication(appId);
       emitter.emit("app-connection", name);
+      await this.removeIntents(appId);
       await this.addUtterances(appId, intents);
       try {
         // await this.trainLuis(appId);
@@ -149,7 +154,23 @@ export default class Bot extends ActivityHandler {
       throw res.statusText;
     }
     const json = await res.json();
+    // console.log(json);
     return json;
+  }
+
+  private async removeIntents(appId: string): Promise<any> {
+    const intentsRes = await fetch(
+      `${LUIS_API_URL}/apps/${appId}/versions/${LUIS_VERSION_ID}/intents`,
+      {
+        headers: { "Ocp-Apim-Subscription-Key": process.env.LUIS_ENDPOINT_KEY },
+      }
+    );
+    console.log(intentsRes);
+    if (!intentsRes.ok) {
+      throw intentsRes.statusText;
+    }
+    const intentsJson = await intentsRes.json();
+    console.log(intentsJson);
   }
 
   // see https://westus.dev.cognitive.microsoft.com/docs/services/5890b47c39e2bb17b84a55ff/operations/5890b47c39e2bb052c5b9c09
