@@ -52,28 +52,31 @@ export default class Bot extends ActivityHandler {
   private recognizer: LuisRecognizerTelemetryClient;
   private intentMap: any;
   private luisAppId: string;
-  // on boot, seed luis with intent data from the connected project and add activity
-  // event handlers
   constructor({ teamId, projectId, boardId, token }: Readonly<UserConfig>) {
     super();
+    // get resources from botmock api and add them to existing luis app
     (async () => {
       const baseURL = `${BOTMOCK_API_URL}/teams/${teamId}/projects/${projectId}`;
-      // make botmock api requests for intents, entities, and the board
-      const [intents, entities, board] = await Promise.all(
-        ["intents", "entities", `boards/${boardId}`].map(async path => {
-          const res = await (await fetch(`${baseURL}/${path}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          })).json();
-          if (path.startsWith("boards")) {
-            return res.board;
-          } else {
-            return res;
+      const [intents, entities, variables, board] = await Promise.all(
+        ["intents", "entities", "variables", `boards/${boardId}`].map(
+          async (path: string) => {
+            const res = await (await fetch(`${baseURL}/${path}`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            })).json();
+            if (path.startsWith("boards")) {
+              return res.board;
+            } else {
+              return res;
+            }
           }
-        })
+        )
       );
+      const { name } = await this.getLuisApplication(process.argv[2]);
+      emitter.emit("connection", name);
+      // console.log(app);
       // const res: LuisImportResponse = await this.seedLuis(intents, entities);
       // if (typeof res !== "string") {
       //   throw res.error;
@@ -152,6 +155,17 @@ export default class Bot extends ActivityHandler {
         return topScoringIntent.intent;
       }
     }
+  }
+
+  private async getLuisApplication(id: string): Promise<any> {
+    const res = await fetch(`${LUIS_API_URL}/apps/${id}`, {
+      headers: { "Ocp-Apim-Subscription-Key": process.env.LUIS_ENDPOINT_KEY },
+    });
+    if (!res.ok) {
+      throw res.statusText;
+    }
+    const json = await res.json();
+    return json;
   }
 
   // seed the Luis service with intents and entities from the Botmock project

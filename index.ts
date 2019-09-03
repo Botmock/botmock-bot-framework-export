@@ -48,7 +48,9 @@ try {
     projectId: process.env.BOTMOCK_PROJECT_ID,
     boardId: process.env.BOTMOCK_BOARD_ID,
   });
-  // listen for training to complete after update
+  emitter.on("connection", (name: string) => {
+    console.info(`connected to project ${name}`);
+  });
   emitter.on("training-complete", (projectName: string) => {
     const PORT = process.env.PORT || 8080;
     server.listen(PORT, (err: Error | null): void => {
