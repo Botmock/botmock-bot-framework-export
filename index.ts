@@ -46,6 +46,7 @@ try {
     throw err;
   });
   emitter.on("restored", () => {
+    console.info(`intents restored in luis app.`);
     app.post("/messages", (req: WebRequest, res: WebResponse): void => {
       adapter.processActivity(req, res, async (ctx: TurnContext) => {
         await bot.run(ctx);

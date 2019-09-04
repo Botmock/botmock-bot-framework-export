@@ -3,7 +3,6 @@ import { LUISAuthoringClient } from "@azure/cognitiveservices-luis-authoring";
 import { CognitiveServicesCredentials } from "@azure/ms-rest-azure-js";
 import { LuisRecognizer, LuisRecognizerTelemetryClient } from "botbuilder-ai";
 import { ActivityHandler, TurnContext } from "botbuilder";
-// import retry from "@zeit/fetch-retry";
 import uuid from "uuid/v4";
 import fetch from "node-fetch";
 import EventEmitter from "events";
@@ -31,7 +30,6 @@ interface Project {
   board: any;
 }
 
-// const retryFetch = retry(fetch);
 export const emitter = new EventEmitter();
 
 export default class Bot extends ActivityHandler {
@@ -155,24 +153,38 @@ export default class Bot extends ActivityHandler {
   }
 
   private async restoreLuisAppWithProjectData(project: Project): Promise<void> {
+    // const luisEntities = await this.client.model.listEntities(
+    //   this.appId,
+    //   this.versionId
+    // );
     const luisIntents = await this.client.model.listIntents(
       this.appId,
       this.versionId
     );
-    for (const intent of project.intents) {
-      let luisIntentWithSameName: any;
-      if (
-        (luisIntentWithSameName = luisIntents.find(
-          li => li.name === intent.name
-        ))
-      ) {
-        await this.client.model.updateIntent(
-          this.appId,
-          this.versionId,
-          luisIntentWithSameName.id,
-          intent
-        );
+    for (const { id, name } of luisIntents) {
+      // None intent cannot be deleted
+      if (name === "None") {
+        continue;
       }
+      await this.client.model.deleteIntent(this.appId, this.versionId, id);
+    }
+    for (const { name, utterances } of project.intents) {
+      await this.client.model.addIntent(this.appId, this.versionId, { name });
+      await this.client.examples.batch(
+        this.appId,
+        this.versionId,
+        utterances.map(utterance => {
+          return {
+            text: utterance.text.replace(/%/g, ""),
+            intentName: name,
+            entityLabels: utterance.variables.map(variable => ({
+              entityName: variable.name.replace(/%/g, ""),
+              startCharIndex: variable.start_index,
+              endCharIndex: variable.start_index + variable.name.length,
+            })),
+          };
+        })
+      );
     }
   }
 }
