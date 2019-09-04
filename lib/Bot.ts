@@ -1,7 +1,8 @@
+import { createIntentMap } from "@botmock-api/utils";
+import { LUISAuthoringClient } from "@azure/cognitiveservices-luis-authoring";
+import { CognitiveServicesCredentials } from "@azure/ms-rest-azure-js";
 import { LuisRecognizer, LuisRecognizerTelemetryClient } from "botbuilder-ai";
 import { ActivityHandler, TurnContext } from "botbuilder";
-import { createIntentMap } from "@botmock-api/utils";
-import AuthoringClient from "@azure/cognitiveservices-luis-authoring";
 // import retry from "@zeit/fetch-retry";
 import uuid from "uuid/v4";
 import fetch from "node-fetch";
@@ -16,7 +17,6 @@ import {
 } from "./types";
 
 const BOTMOCK_API_URL = "https://app.botmock.com/api";
-const LUIS_API_URL = "https://westus.api.cognitive.microsoft.com/luis/api/v2.0";
 const LUIS_VERSION_ID = "0.2";
 
 interface UserConfig {
@@ -29,15 +29,22 @@ interface UserConfig {
 // const retryFetch = retry(fetch);
 export const emitter = new EventEmitter();
 
-// export class extending botbuilder's event-emitting class
 export default class Bot extends ActivityHandler {
   private recognizer: LuisRecognizerTelemetryClient;
-  private intentMap: any;
-  private luisAppId: string;
+  private client: LUISAuthoringClient;
+  private intentMap: Map<string, string[]>;
+  private readonly appId: string = process.argv[2];
+
+  // restore existing luis app with resources from botmock project
   constructor({ teamId, projectId, boardId, token }: Readonly<UserConfig>) {
     super();
-    // const client = new AuthoringClient(new TokenCredentials())
-    // get resources from botmock api and add them to existing luis app
+    const credentials = new CognitiveServicesCredentials(
+      process.env.LUIS_ENDPOINT_KEY
+    );
+    this.client = new LUISAuthoringClient(
+      credentials,
+      "https://westus.api.cognitive.microsoft.com"
+    );
     (async () => {
       const baseURL = `${BOTMOCK_API_URL}/teams/${teamId}/projects/${projectId}`;
       const [intents, entities, variables, board] = await Promise.all(
@@ -57,25 +64,15 @@ export default class Bot extends ActivityHandler {
           }
         )
       );
-      const appId = process.argv[2];
-      const { name } = await this.getLuisApplication(appId);
-      emitter.emit("app-connection", name);
-      await this.removeIntents(appId);
-      await this.addUtterances(appId, intents);
-      try {
-        // await this.trainLuis(appId);
-        emitter.emit("train");
-      } catch (_) {
-        throw "failed to train model";
-      }
+      await this.restoreLuisAppWithProjectData({ intents, entities, board });
       this.recognizer = new LuisRecognizer(
         {
-          applicationId: appId,
+          applicationId: this.appId,
           endpointKey: process.env.LUIS_ENDPOINT_KEY,
         },
         { includeAllIntents: true, log: true, staging: false }
       );
-      // create mapping of message ids to array of connected intent ids
+      // mapping of message ids to array of connected intent ids
       this.intentMap = createIntentMap(board.messages, intents);
       // create handler for all incoming messages
       this.onMessage(async (ctx, next) => {
@@ -146,86 +143,7 @@ export default class Bot extends ActivityHandler {
     }
   }
 
-  private async getLuisApplication(appId: string): Promise<any> {
-    const res = await fetch(`${LUIS_API_URL}/apps/${appId}`, {
-      headers: { "Ocp-Apim-Subscription-Key": process.env.LUIS_ENDPOINT_KEY },
-    });
-    if (!res.ok) {
-      throw res.statusText;
-    }
-    const json = await res.json();
-    // console.log(json);
-    return json;
-  }
-
-  private async removeIntents(appId: string): Promise<any> {
-    const intentsRes = await fetch(
-      `${LUIS_API_URL}/apps/${appId}/versions/${LUIS_VERSION_ID}/intents`,
-      {
-        headers: { "Ocp-Apim-Subscription-Key": process.env.LUIS_ENDPOINT_KEY },
-      }
-    );
-    console.log(intentsRes);
-    if (!intentsRes.ok) {
-      throw intentsRes.statusText;
-    }
-    const intentsJson = await intentsRes.json();
-    console.log(intentsJson);
-  }
-
-  // see https://westus.dev.cognitive.microsoft.com/docs/services/5890b47c39e2bb17b84a55ff/operations/5890b47c39e2bb052c5b9c09
-  private async addUtterances(
-    appId: string,
-    intents: Intent[]
-  ): Promise<BatchAddLabelsResponse> {
-    const utterances = intents.reduce(
-      (acc, intent: Intent) => [
-        ...acc,
-        ...intent.utterances.map(utterance => ({
-          text: utterance.text,
-          intentName: intent.name,
-          entityLabels: utterance.variables.map(variable => ({
-            entityName: "",
-            startCharIndex: "",
-            endCharIndex: "",
-          })),
-        })),
-      ],
-      []
-    );
-    if (!utterances.length) {
-      return new Promise(resolve => resolve(null));
-    }
-    const res = await fetch(
-      `${LUIS_API_URL}/apps/${appId}/versions/${LUIS_VERSION_ID}/examples`,
-      {
-        method: "POST",
-        headers: {
-          "Ocp-Apim-Subscription-Key": process.env.LUIS_ENDPOINT_KEY,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(utterances),
-      }
-    );
-    if (!res.ok) {
-      throw res.statusText;
-    }
-    return await res.json();
-  }
-
-  // train the luis model
-  private async trainLuis(appId: string): Promise<LuisTrainResponse> {
-    const url = `${LUIS_API_URL}/apps/${appId}/versions/${LUIS_VERSION_ID}/train`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Ocp-Apim-Subscription-Key": process.env.LUIS_ENDPOINT_KEY,
-        "Content-Type": "application/json",
-      },
-    });
-    if (!res.ok) {
-      throw res.statusText;
-    }
-    return await res.json();
+  private async restoreLuisAppWithProjectData(project: {}): Promise<void> {
+    console.log(this.client);
   }
 }

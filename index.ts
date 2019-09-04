@@ -39,10 +39,6 @@ try {
       console.error(err);
     }
   });
-  // when app data has been fetch, alert the user
-  emitter.on("app-connection", (name: string) => {
-    console.info(`connected to project "${name}".`);
-  });
   const adapter = new BotFrameworkAdapter({});
   const bot = new Bot({
     token: process.env.BOTMOCK_TOKEN,
@@ -55,11 +51,9 @@ try {
       await bot.run(ctx);
     });
   });
-  emitter.on("train", () => {
-    const PORT = process.env.PORT || 8080;
-    app.listen(PORT, (err: Error | null): void => {
-      console.info(`connect emulator to http://localhost:${PORT}/messages`);
-    });
+  const PORT = process.env.PORT || 8080;
+  app.listen(PORT, (err: Error | null): void => {
+    console.info(`connect emulator to http://localhost:${PORT}/messages`);
   });
 } catch (err) {
   console.error(err);

@@ -34,6 +34,7 @@
   "license": "MIT",
   "dependencies": {
     "@azure/cognitiveservices-luis-authoring": "3.0.1",
+    "@azure/ms-rest-azure-js": "2.0.1",
     "@botmock-api/utils": "2.0.0",
     "botbuilder": "4.5.3",
     "botbuilder-ai": "4.5.3",
