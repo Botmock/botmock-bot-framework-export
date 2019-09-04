@@ -39,6 +39,7 @@
     "botbuilder": "4.5.3",
     "botbuilder-ai": "4.5.3",
     "botmock": "1.2.0",
+    "chalk": "2.4.2",
     "dotenv": "8.1.0",
     "express": "4.17.1",
     "node-fetch": "2.6.0"

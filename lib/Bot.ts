@@ -152,10 +152,16 @@ export default class Bot extends ActivityHandler {
   }
 
   private async restoreLuisAppWithProjectData(project: Project): Promise<void> {
-    // const luisEntities = await this.client.model.listEntities(
-    //   this.appId,
-    //   this.versionId
-    // );
+    const luisEntities = await this.client.model.listEntities(
+      this.appId,
+      this.versionId
+    );
+    for (const { id } of luisEntities) {
+      await this.client.model.deleteEntity(this.appId, this.versionId, id);
+    }
+    for (const { name } of project.entities) {
+      await this.client.model.addEntity(this.appId, this.versionId, { name });
+    }
     const luisIntents = await this.client.model.listIntents(
       this.appId,
       this.versionId
@@ -185,7 +191,7 @@ export default class Bot extends ActivityHandler {
         })
       );
       for (const { error } of batchRes.filter(res => !!res.hasError)) {
-        emitter.emit("import-error-batch", error);
+        emitter.emit("import-error-batch", name, error);
       }
     }
   }

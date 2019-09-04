@@ -2,6 +2,7 @@ import "dotenv/config";
 import os from "os";
 import assert from "assert";
 import express from "express";
+import chalk from "chalk";
 import {
   BotFrameworkAdapter,
   WebRequest,
@@ -44,8 +45,14 @@ try {
   });
   emitter.on(
     "import-error-batch",
-    (error: { code: string; message: string }) => {
-      console.error(error.message);
+    (intentName: string, error: { code: string; message: string }) => {
+      console.error(
+        chalk.dim(
+          `problem importing "${intentName}"" utterances: ${JSON.stringify(
+            error
+          )}`
+        )
+      );
     }
   );
   emitter.on("error", (err: Error) => {
