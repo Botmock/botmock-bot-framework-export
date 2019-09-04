@@ -41,13 +41,11 @@
     "botmock": "1.2.0",
     "dotenv": "8.1.0",
     "express": "4.17.1",
-    "node-fetch": "2.6.0",
-    "restify": "8.3.3",
-    "uuid": "3.3.2"
+    "node-fetch": "2.6.0"
   },
   "devDependencies": {
     "@types/jest": "24.0.18",
-    "@types/node": "12.7.3",
+    "@types/node": "12.7.4",
     "@types/node-fetch": "2.5.0",
     "jest": "24.9.0",
     "ts-jest": "^24.0.2",

@@ -42,6 +42,12 @@ try {
     projectId: process.env.BOTMOCK_PROJECT_ID,
     boardId: process.env.BOTMOCK_BOARD_ID,
   });
+  emitter.on(
+    "import-error-batch",
+    (error: { code: string; message: string }) => {
+      console.error(error.message);
+    }
+  );
   emitter.on("error", (err: Error) => {
     throw err;
   });

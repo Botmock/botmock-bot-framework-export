@@ -3,7 +3,6 @@ import { LUISAuthoringClient } from "@azure/cognitiveservices-luis-authoring";
 import { CognitiveServicesCredentials } from "@azure/ms-rest-azure-js";
 import { LuisRecognizer, LuisRecognizerTelemetryClient } from "botbuilder-ai";
 import { ActivityHandler, TurnContext } from "botbuilder";
-import uuid from "uuid/v4";
 import fetch from "node-fetch";
 import EventEmitter from "events";
 import {
@@ -162,7 +161,7 @@ export default class Bot extends ActivityHandler {
       this.versionId
     );
     for (const { id, name } of luisIntents) {
-      // None intent cannot be deleted
+      // "None" intent cannot be deleted
       if (name === "None") {
         continue;
       }
@@ -170,7 +169,7 @@ export default class Bot extends ActivityHandler {
     }
     for (const { name, utterances } of project.intents) {
       await this.client.model.addIntent(this.appId, this.versionId, { name });
-      await this.client.examples.batch(
+      const batchRes: any[] = await this.client.examples.batch(
         this.appId,
         this.versionId,
         utterances.map(utterance => {
@@ -185,6 +184,9 @@ export default class Bot extends ActivityHandler {
           };
         })
       );
+      for (const { error } of batchRes.filter(res => !!res.hasError)) {
+        emitter.emit("import-error-batch", error);
+      }
     }
   }
 }
