@@ -44,7 +44,9 @@ LUIS_ENDPOINT_KEY=@YOUR-LUIS-ENDPOINT_KEY
 
 > The last field (also called "Authoring Key") should be obtainable by visiting "Application Settings" in the [luis.ai dashboard](https://www.luis.ai/applications).
 
-Start the HTTP server, passing the Luis application id as the first argument:
+Start the HTTP server, passing the Luis Application id as the first argument.
+
+> Note that this command will attempt to _replace all existing Luis intents_ in the application with those found in the Botmock project.
 
 ```shell
 npm start -- your-luis-application-id
