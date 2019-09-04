@@ -31,14 +31,10 @@ try {
   throw "requires node.js version 10.16.0 or greater";
 }
 
+const PORT = process.env.PORT || 8080;
 export const app = express();
 
 try {
-  emitter.on("error", (err: Error) => {
-    if (process.env.DEBUG) {
-      console.error(err);
-    }
-  });
   const adapter = new BotFrameworkAdapter({});
   const bot = new Bot({
     token: process.env.BOTMOCK_TOKEN,
@@ -46,14 +42,18 @@ try {
     projectId: process.env.BOTMOCK_PROJECT_ID,
     boardId: process.env.BOTMOCK_BOARD_ID,
   });
-  app.post("/messages", (req: WebRequest, res: WebResponse): void => {
-    adapter.processActivity(req, res, async (ctx: TurnContext) => {
-      await bot.run(ctx);
-    });
+  emitter.on("error", (err: Error) => {
+    throw err;
   });
-  const PORT = process.env.PORT || 8080;
-  app.listen(PORT, (err: Error | null): void => {
-    console.info(`connect emulator to http://localhost:${PORT}/messages`);
+  emitter.on("restored", () => {
+    app.post("/messages", (req: WebRequest, res: WebResponse): void => {
+      adapter.processActivity(req, res, async (ctx: TurnContext) => {
+        await bot.run(ctx);
+      });
+    });
+    app.listen(PORT, (err: Error | null): void => {
+      console.info(`connect emulator to http://localhost:${PORT}/messages`);
+    });
   });
 } catch (err) {
   console.error(err);

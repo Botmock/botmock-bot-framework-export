@@ -17,13 +17,18 @@ import {
 } from "./types";
 
 const BOTMOCK_API_URL = "https://app.botmock.com/api";
-const LUIS_VERSION_ID = "0.2";
 
 interface UserConfig {
   token: string;
   teamId: string;
   projectId: string;
   boardId: string;
+}
+
+interface Project {
+  intents: any[];
+  entities: any[];
+  board: any;
 }
 
 // const retryFetch = retry(fetch);
@@ -33,7 +38,8 @@ export default class Bot extends ActivityHandler {
   private recognizer: LuisRecognizerTelemetryClient;
   private client: LUISAuthoringClient;
   private intentMap: Map<string, string[]>;
-  private readonly appId: string = process.argv[2];
+  private readonly appId = process.argv[2];
+  private readonly versionId = "0.1";
 
   // restore existing luis app with resources from botmock project
   constructor({ teamId, projectId, boardId, token }: Readonly<UserConfig>) {
@@ -64,7 +70,12 @@ export default class Bot extends ActivityHandler {
           }
         )
       );
-      await this.restoreLuisAppWithProjectData({ intents, entities, board });
+      try {
+        await this.restoreLuisAppWithProjectData({ intents, entities, board });
+        emitter.emit("restored");
+      } catch (err) {
+        emitter.emit("error", err);
+      }
       this.recognizer = new LuisRecognizer(
         {
           applicationId: this.appId,
@@ -143,7 +154,25 @@ export default class Bot extends ActivityHandler {
     }
   }
 
-  private async restoreLuisAppWithProjectData(project: {}): Promise<void> {
-    console.log(this.client);
+  private async restoreLuisAppWithProjectData(project: Project): Promise<void> {
+    const luisIntents = await this.client.model.listIntents(
+      this.appId,
+      this.versionId
+    );
+    for (const intent of project.intents) {
+      let luisIntentWithSameName: any;
+      if (
+        (luisIntentWithSameName = luisIntents.find(
+          li => li.name === intent.name
+        ))
+      ) {
+        await this.client.model.updateIntent(
+          this.appId,
+          this.versionId,
+          luisIntentWithSameName.id,
+          intent
+        );
+      }
+    }
   }
 }
