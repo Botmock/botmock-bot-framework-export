@@ -41,11 +41,11 @@ Create `.env` in the created directory and fill in values for the following:
 
 > The last field (also called "Authoring Key") should be obtainable by visiting "Application Settings" in the [luis.ai dashboard](https://www.luis.ai/applications).
 
-> The Botmock token can be found in the "Developer API" section of the Botmock dashboard
+The Botmock token can be found in the "Developer API" section of the Botmock dashboard
 
 ![token](https://downloads.intercomcdn.com/i/o/96904467/4d96178941d7bfb614994c92/developer-api.gif)
 
-> The Botmock team, board, and project ids can be found in the "settings" of any particular Botmock project
+The Botmock team, board, and project ids can be found in the "settings" of any particular Botmock project
 
 ![ids](https://downloads.intercomcdn.com/i/o/96904238/df44841a2876f15781e91d45/Screenshot+2019-01-14+23.49.44.png)
 
