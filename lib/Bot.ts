@@ -35,11 +35,14 @@ export default class Bot extends ActivityHandler {
   private recognizer: LuisRecognizerTelemetryClient;
   private client: LUISAuthoringClient;
   private intentMap: Map<string, string[]>;
-  private readonly appId = process.argv[2];
   private readonly versionId = "0.1";
+  private appId: string;
 
   // restore existing luis app with resources from botmock project
-  constructor({ teamId, projectId, boardId, token }: Readonly<UserConfig>) {
+  constructor(
+    appId: string,
+    { teamId, projectId, boardId, token }: Readonly<UserConfig>
+  ) {
     super();
     const credentials = new CognitiveServicesCredentials(
       process.env.LUIS_ENDPOINT_KEY
@@ -48,6 +51,7 @@ export default class Bot extends ActivityHandler {
       credentials,
       "https://westus.api.cognitive.microsoft.com"
     );
+    this.appId = appId;
     (async () => {
       const baseURL = `${BOTMOCK_API_URL}/teams/${teamId}/projects/${projectId}`;
       const [intents, entities, variables, board] = await Promise.all(
@@ -69,7 +73,7 @@ export default class Bot extends ActivityHandler {
       );
       try {
         await this.restoreLuisAppWithProjectData({ intents, entities, board });
-        emitter.emit("restored");
+        emitter.emit("all-restored");
       } catch (err) {
         emitter.emit("error", err);
       }
