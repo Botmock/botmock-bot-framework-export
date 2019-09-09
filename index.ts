@@ -1,15 +1,41 @@
 import "dotenv/config";
 import os from "os";
-import ora from "ora";
-import { BotFrameworkAdapter, WebRequest, WebResponse } from "botbuilder";
-import { createServer } from "restify";
+import assert from "assert";
+import express from "express";
+import chalk from "chalk";
+import {
+  BotFrameworkAdapter,
+  WebRequest,
+  WebResponse,
+  TurnContext,
+} from "botbuilder";
 import Bot, { emitter } from "./lib/Bot";
 
-const PORT = process.env.PORT || 8080;
-const server = createServer();
+try {
+  assert.notStrictEqual(typeof process.argv[2], "undefined");
+} catch (_) {
+  throw "requires luis app id as first argument; see README.md for more info";
+}
 
 try {
-  const spinner = ora(`Building app.. ${os.EOL}`).start();
+  const MIN_NODE_VERSION = 101600;
+  const numericalNodeVersion = parseInt(
+    process.version
+      .slice(1)
+      .split(".")
+      .map(seq => seq.padStart(2, "0"))
+      .join(""),
+    10
+  );
+  assert.strictEqual(numericalNodeVersion >= MIN_NODE_VERSION, true);
+} catch (_) {
+  throw "requires node.js version 10.16.0 or greater";
+}
+
+const PORT = process.env.PORT || 8080;
+export const app = express();
+
+try {
   const adapter = new BotFrameworkAdapter({});
   const bot = new Bot({
     token: process.env.BOTMOCK_TOKEN,
@@ -17,37 +43,33 @@ try {
     projectId: process.env.BOTMOCK_PROJECT_ID,
     boardId: process.env.BOTMOCK_BOARD_ID,
   });
-  emitter.on("error", (err: Error) => {
-    if (process.env.DEBUG) {
-      console.error(err);
-    }
-  });
-  emitter.on("few-utterances", () => {
-    console.warn(`${os.EOL}There are too few utterances for one or more intents.
-Add >= 10 utterances for each intent to prevent training failure.`);
-  });
   emitter.on(
-    "training-complete",
-    (projectName: string = "the most recently created app.") => {
-      spinner.stop();
-      console.log(`App built. Training complete.
-Visit the luis.ai dashboard and publish ${projectName}`);
-      server.listen(PORT, (): void => {
-        console.log(
-          `Connect Bot Framework Emulator to http://localhost:${PORT}/messages`
-        );
-      });
-      // handle post requests made to /messages
-      server.post("/messages", (req: WebRequest, res: WebResponse): void => {
-        adapter.processActivity(req, res, async ctx => {
-          await bot.run(ctx);
-        });
-      });
+    "import-error-batch",
+    (intentName: string, error: { code: string; message: string }) => {
+      console.error(
+        chalk.dim(
+          `problem importing "${intentName}"" utterances: ${JSON.stringify(
+            error
+          )}`
+        )
+      );
     }
   );
+  emitter.on("error", (err: Error) => {
+    throw err;
+  });
+  emitter.on("restored", () => {
+    console.info(`intents restored in luis app.`);
+    app.post("/messages", (req: WebRequest, res: WebResponse): void => {
+      adapter.processActivity(req, res, async (ctx: TurnContext) => {
+        await bot.run(ctx);
+      });
+    });
+    app.listen(PORT, (err: Error | null): void => {
+      console.info(`connect emulator to http://localhost:${PORT}/messages`);
+    });
+  });
 } catch (err) {
   console.error(err);
   process.exit(1);
 }
-
-export default server;

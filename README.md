@@ -1,14 +1,16 @@
 # Botmock Microsoft Bot Framework Integration
 
+[![Build status](https://ci.appveyor.com/api/projects/status/tgof5738pfqppis7?svg=true)](https://ci.appveyor.com/project/nonnontrivial/botmock-botframework-export)
+
 Easily utilize Botmock's Developer Handoff functionality to use conversational design data with Microsoft's Bot Framework and Azure Bot services.
 
 - [Tutorial Video](https://www.youtube.com/watch?v=3P8XwT20QXs)
 - Documentation (Coming Soon)
 - [Support Email](mailto:help@botmock.com)
 
-## Prerequisites
+### Prerequisites
 
-- [Node.js](https://nodejs.org/en/) >= 10.15.x
+- [Node.js](https://nodejs.org/en/) >= 10.16.x
 
 ```shell
 node --version
@@ -18,7 +20,7 @@ node --version
 
 - [Luis.ai](https://www.luis.ai) account
 
-## Guide
+## Installation Guide
 
 Clone this repository and install dependencies:
 
@@ -30,25 +32,25 @@ cd botmock-botframework-export
 npm i
 ```
 
-Create `/.env` and fill in values for the following:
+Create `.env` in the created directory and fill in values for the following:
 
 ```shell
-BOTMOCK_TOKEN="@YOUR-BOTMOCK-TOKEN"
-BOTMOCK_TEAM_ID="@YOUR-BOTMOCK-TEAM-ID"
-BOTMOCK_BOARD_ID="@YOUR-BOTMOCK-BOARD-ID"
-BOTMOCK_PROJECT_ID="@YOUR-BOTMOCK-PROJECT-ID"
-LUIS_ENDPOINT_KEY="@YOUR-LUIS-ENDPOINT_KEY"
+BOTMOCK_TOKEN=@YOUR-BOTMOCK-TOKEN
+BOTMOCK_TEAM_ID=@YOUR-BOTMOCK-TEAM-ID
+BOTMOCK_BOARD_ID=@YOUR-BOTMOCK-BOARD-ID
+BOTMOCK_PROJECT_ID=@YOUR-BOTMOCK-PROJECT-ID
+LUIS_ENDPOINT_KEY=@YOUR-LUIS-ENDPOINT_KEY
 ```
 
-> The last field (also called "Authoring Key") should be obtainable by visiting settings in the Luis.ai dashboard.
+> The last field (also called "Authoring Key") should be obtainable by visiting "Application Settings" in the [luis.ai dashboard](https://www.luis.ai/applications).
 
-Start the HTTP server:
+Start the HTTP server, passing the Luis Application id as the first argument.
+
+> Note that this command will attempt to _replace all existing Luis intents_ in the application with those found in the Botmock project.
 
 ```shell
-npm start
+npm start -- your-luis-application-id
 ```
-
-Find the created app in the Luis.ai dashboard and publish it.
 
 Open Bot Framework Emulator and point it to `http://localhost:8080/messages`.
 
