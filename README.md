@@ -1,16 +1,17 @@
 # Botmock Microsoft Bot Framework Integration
 
+> **Note: This repo is in the process of being split in two.**
+> This repo will primarily handle syncing Botmock assets with Luis.ai projects, while the new repo will take over responsibility for Botframework conversations.
+
 [![Build status](https://ci.appveyor.com/api/projects/status/tgof5738pfqppis7?svg=true)](https://ci.appveyor.com/project/nonnontrivial/botmock-botframework-export)
 
-Easily utilize Botmock's Developer Handoff functionality to use conversational design data with Microsoft's Bot Framework and Azure Bot services.
-
-- [Tutorial Video](https://www.youtube.com/watch?v=3P8XwT20QXs)
-- Documentation (Coming Soon)
-- [Support Email](mailto:help@botmock.com)
+Use Botmock developer handoff functionality with Microsoft [Bot Framework](https://dev.botframework.com/) and [Azure Bot services](https://azure.microsoft.com/en-us/free/ai/).
 
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/en/) >= 10.16.x
+
+Which can be checked by running:
 
 ```shell
 node --version
@@ -22,7 +23,9 @@ node --version
 
 ## Installation Guide
 
-Clone this repository and install dependencies:
+#### clone
+
+Clone this repository, make it the current directory, and install dependencies:
 
 ```shell
 git clone git@github.com:Botmock/botmock-botframework-export.git
@@ -32,7 +35,19 @@ cd botmock-botframework-export
 npm i
 ```
 
+#### set environment
+
 Create `.env` in the created directory and fill in values for the following:
+
+> The last field (also called "Authoring Key") should be obtainable by visiting "Application Settings" in the [luis.ai dashboard](https://www.luis.ai/applications).
+
+> The Botmock token can be found in the "Developer API" section of the Botmock dashboard
+
+![token](https://downloads.intercomcdn.com/i/o/96904467/4d96178941d7bfb614994c92/developer-api.gif)
+
+> The Botmock team, board, and project ids can be found in the "settings" of any particular Botmock project
+
+![ids](https://downloads.intercomcdn.com/i/o/96904238/df44841a2876f15781e91d45/Screenshot+2019-01-14+23.49.44.png)
 
 ```shell
 BOTMOCK_TOKEN=@YOUR-BOTMOCK-TOKEN
@@ -42,17 +57,15 @@ BOTMOCK_PROJECT_ID=@YOUR-BOTMOCK-PROJECT-ID
 LUIS_ENDPOINT_KEY=@YOUR-LUIS-ENDPOINT_KEY
 ```
 
-> The last field (also called "Authoring Key") should be obtainable by visiting "Application Settings" in the [luis.ai dashboard](https://www.luis.ai/applications).
+#### run
 
-Start the HTTP server, passing the Luis Application id as the first argument.
+Start the wizard which asks whether or not the HTTP server necessary for Botframework should be set up, and for a valid Luis.ai application id:
 
-> Note that this command will attempt to _replace all existing Luis intents_ in the application with those found in the Botmock project.
+> Note that this command will attempt to **replace all existing Luis intents** in the application with those found in the Botmock project.
 
 ```shell
-npm start -- your-luis-application-id
+npm start
 ```
-
-Open Bot Framework Emulator and point it to `http://localhost:8080/messages`.
 
 ## Want to help?
 
