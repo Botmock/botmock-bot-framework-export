@@ -70,7 +70,7 @@ export async function writeToOutput(projectData: Partial<Assets.Project>, output
       culture: "en-us",
       tokenizerVersion: "1.0.0",
       intents: projectData.intents.map(intent => ({ name: intent.name })),
-      entities: [],
+      entities: projectData.entities.map(entity => ({ name: entity.name, roles: [] })),
       composites: [],
       closedLists: [],
       patternAnyEntities: [],
@@ -87,7 +87,7 @@ export async function writeToOutput(projectData: Partial<Assets.Project>, output
 process.on("unhandledRejection", () => {});
 process.on("uncaughtException", () => {});
 
-main(process.argv).catch(err => {
+main(process.argv).catch((err: Error) => {
   log(err.message, { hasError: true });
   Sentry.captureException(err);
 });
