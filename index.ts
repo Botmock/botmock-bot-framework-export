@@ -17,6 +17,7 @@ export interface Project {
   intents: any[];
   variables: any[];
   entities: any[];
+  meta: { name: string };
 }
 
 interface LogConfig {
@@ -45,14 +46,36 @@ async function main(args: string[]): Promise<void> {
     await writeToOutput({ intents, variables, entities }, outputDir);
   } catch (err) {
     throw err;
-  } finally {
-    log("done")
   }
+  log("done");
 }
 
 export async function writeToOutput(project: Partial<Project>, outputDir: string): Promise<void> {
-  // const name = `${project.name}.json`;
-  // await writeJSON(path.join(outputDir, name), { name: pkg.name });
+  const LUIS_SCHEMA_VERSION = "3.2.0";
+  const VERSION_ID = "0.1";
+  const name = `test.json`;
+  return await writeJSON(
+    path.join(outputDir, name),
+    {
+      luis_schema_version: LUIS_SCHEMA_VERSION,
+      versionId: VERSION_ID,
+      name: "",
+      desc: "",
+      culture: "en-us",
+      tokenizerVersion: "1.0.0",
+      intents: [],
+      entities: [],
+      composites: [],
+      closedLists: [],
+      patternAnyEntities: [],
+      regex_entities: [],
+      prebuiltEntities: [],
+      model_features: [],
+      regex_features: [],
+      patterns: [],
+      utterances: [],
+    }
+  );
 }
 
 process.on("unhandledRejection", () => {});
