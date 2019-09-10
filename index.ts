@@ -56,15 +56,13 @@ async function main(args: string[]): Promise<void> {
 }
 
 export async function writeToOutput(projectData: Partial<Assets.Project>, outputDir: string): Promise<void> {
-  const LUIS_SCHEMA_VERSION = "3.2.0";
-  const VERSION_ID = "0.1";
   const writeDir = path.join(outputDir, `${projectData.project.name}.json`)
   log(`generating json for project in ${writeDir}`);
   return await writeJSON(
     writeDir,
     {
-      luis_schema_version: LUIS_SCHEMA_VERSION,
-      versionId: VERSION_ID,
+      luis_schema_version: process.env.LUIS_SCHEMA_VERSION || "3.2.0",
+      versionId: process.env.VERSION_ID || "0.1",
       name: projectData.project.name,
       desc: projectData.project.platform,
       culture: "en-us",
