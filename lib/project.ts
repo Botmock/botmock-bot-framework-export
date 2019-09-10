@@ -16,7 +16,7 @@ type DataObj = {
 };
 
 export default class APIWrapper extends EventEmitter {
-  readonly config: Partial<Config>;
+  readonly config: Config;
   readonly endpoints: Map<string, string>;
   /**
    * Initializes a new instance of APIWrapper
