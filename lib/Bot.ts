@@ -5,14 +5,11 @@ import { LuisRecognizer, LuisRecognizerTelemetryClient } from "botbuilder-ai";
 import { ActivityHandler, TurnContext } from "botbuilder";
 import fetch from "node-fetch";
 import EventEmitter from "events";
-import {
-  Intent,
-  Utterance,
-  Entity,
-  BatchAddLabelsResponse,
-  LuisImportResponse,
-  LuisTrainResponse,
-} from "./types";
+// import {
+//   Intent,
+//   Utterance,
+//   Entity,
+// } from "./types";
 
 const BOTMOCK_API_URL = "https://app.botmock.com/api";
 

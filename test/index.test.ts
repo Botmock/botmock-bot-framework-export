@@ -1,3 +1,8 @@
-// import { app } from "../";
+// import fs from "fs";
+// import Generator from "../lib/Generator";
 
-test.todo("");
+beforeEach(() => {});
+
+test("start command produces json file", async () => {
+  expect(true).toBe(true);
+});

@@ -1,11 +1,8 @@
 # Botmock Microsoft Bot Framework Integration
 
-> **Note: This repo is in the process of being split in two.**
-> This repo will primarily handle syncing Botmock assets with Luis.ai projects, while the new repo will take over responsibility for Botframework conversations.
-
 [![Build status](https://ci.appveyor.com/api/projects/status/tgof5738pfqppis7?svg=true)](https://ci.appveyor.com/project/nonnontrivial/botmock-botframework-export)
 
-Use Botmock developer handoff functionality with Microsoft [Bot Framework](https://dev.botframework.com/) and [Azure Bot services](https://azure.microsoft.com/en-us/free/ai/).
+Import Botmock projects in Luis.ai
 
 ### Prerequisites
 
@@ -17,13 +14,7 @@ Which can be checked by running:
 node --version
 ```
 
-- [Bot Framework Emulator](https://github.com/Microsoft/BotFramework-Emulator/blob/master/README.md) >= 4.3.0
-
-- [Luis.ai](https://www.luis.ai) account
-
 ## Installation Guide
-
-#### clone
 
 Clone this repository, make it the current directory, and install dependencies:
 
@@ -34,8 +25,6 @@ cd botmock-botframework-export
 
 npm i
 ```
-
-#### set environment
 
 Create `.env` in the created directory and fill in values for the following:
 
@@ -57,9 +46,7 @@ BOTMOCK_PROJECT_ID=@YOUR-BOTMOCK-PROJECT-ID
 LUIS_ENDPOINT_KEY=@YOUR-LUIS-ENDPOINT_KEY
 ```
 
-#### run
-
-Start the wizard which asks whether or not the HTTP server necessary for Botframework should be set up, and for a valid Luis.ai application id:
+<!-- Start the wizard which asks whether or not the HTTP server necessary for Botframework should be set up, and for a valid Luis.ai application id: -->
 
 > Note that this command will attempt to **replace all existing Luis intents** in the application with those found in the Botmock project.
 

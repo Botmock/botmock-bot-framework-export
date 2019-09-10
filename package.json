@@ -1,9 +1,7 @@
 {
   "name": "botmock-botframework-export",
   "version": "1.0.0",
-  "description": "port a Botmock project to MS Botframework",
-  "main": "index.ts",
-  "module": "index.ts",
+  "description": "import botmock projects in microsoft luis",
   "scripts": {
     "test": "jest",
     "start": "ts-node index.ts"
@@ -35,13 +33,13 @@
   "dependencies": {
     "@azure/cognitiveservices-luis-authoring": "3.0.1",
     "@azure/ms-rest-azure-js": "2.0.1",
-    "@botmock-api/utils": "2.0.0",
+    "@botmock-api/utils": "2.3.0",
+    "@sentry/node": "5.6.2",
     "botbuilder": "4.5.3",
     "botbuilder-ai": "4.5.3",
     "botmock": "1.2.0",
     "chalk": "2.4.2",
     "dotenv": "8.1.0",
-    "express": "4.17.1",
     "inquirer": "7.0.0",
     "node-fetch": "2.6.0"
   },
