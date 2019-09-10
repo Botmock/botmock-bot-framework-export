@@ -1,13 +1,17 @@
 import path from "path";
 // import execa from "execa";
-// import { stat } from "fs-extra";
+import { remove, mkdirp, stat } from "fs-extra";
 import { writeToOutput } from "../";
 
-// beforeEach(() => {});
+const outputDir = path.join(__dirname, "output");
+
+beforeEach(async () => {
+  await remove(outputDir);
+  await mkdirp(outputDir);
+});
 
 test("json can be written to output", async () => {
-  const mockProject = {};
   expect(async () => {
-    await writeToOutput(mockProject, path.join(__dirname, "output"));
+    await writeToOutput({}, outputDir);
   }).not.toThrow();
 });

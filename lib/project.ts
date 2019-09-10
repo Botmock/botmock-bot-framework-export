@@ -66,7 +66,7 @@ export default class APIWrapper extends EventEmitter {
 
   public async fetch(): Promise<any> {
     return (await Promise.all(
-      // perform fetch on each asset
+      // perform fetch on each endpoint
       Array.from(this.endpoints.values()).map(async (endpoint: string) => {
         const url = `${BOTMOCK_API_URL}/teams/${this.config.teamId}/projects/${this.config.projectId}`;
         const res = await fetch(`${url}${endpoint}`, {

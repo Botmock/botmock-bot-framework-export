@@ -46,7 +46,6 @@ async function main(args: string[]): Promise<void> {
     throw err;
   });
   try {
-    log("generating json for project");
     const projectData = await apiWrapper.fetch();
     await writeToOutput(projectData, outputDir);
   } catch (err) {
@@ -58,6 +57,7 @@ async function main(args: string[]): Promise<void> {
 export async function writeToOutput(projectData: Partial<Project>, outputDir: string): Promise<void> {
   const LUIS_SCHEMA_VERSION = "3.2.0";
   const VERSION_ID = "0.1";
+  log("generating json for project");
   return await writeJSON(
     path.join(outputDir, `${projectData.project.name}.json`),
     {
