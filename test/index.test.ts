@@ -1,9 +1,9 @@
-// import { stat } from "fs-extra";
-// import execa from "execa";
 import path from "path";
+// import execa from "execa";
+// import { stat } from "fs-extra";
 import { writeToOutput } from "../";
 
-beforeEach(() => {});
+// beforeEach(() => {});
 
 test("json can be written to output", async () => {
   const mockProject = {};

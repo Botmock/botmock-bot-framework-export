@@ -5,20 +5,13 @@ import path from "path";
 import chalk from "chalk";
 import * as Sentry from "@sentry/node";
 import { remove, mkdirp, writeJSON } from "fs-extra";
-import { getProjectAssets } from "./lib/project";
+import { default as APIWrapper, Project } from "./lib/project";
 import { SENTRY_DSN } from "./lib/constants";
 
 Sentry.init({
   dsn: SENTRY_DSN,
   release: `botmock-cli@${pkg.version}`,
 });
-
-export interface Project {
-  intents: any[];
-  variables: any[];
-  entities: any[];
-  meta: { name: string };
-}
 
 interface LogConfig {
   hasError: boolean;
@@ -40,30 +33,41 @@ async function main(args: string[]): Promise<void> {
   await remove(outputDir);
   await mkdirp(outputDir);
   log("fetching botmock assets");
-  const { intents, variables, entities } = await getProjectAssets();
+  const apiWrapper = new APIWrapper({
+    token: process.env.BOTMOCK_TOKEN,
+    teamId: process.env.BOTMOCK_TEAM_ID,
+    projectId: process.env.BOTMOCK_PROJECT_ID,
+    boardId: process.env.BOTMOCK_BOARD_ID,
+  });
+  apiWrapper.on("asset-fetched", (assetName: string) => {
+    log(`fetched ${assetName}`);
+  });
+  apiWrapper.on("error", err => {
+    throw err;
+  });
   try {
     log("generating json for project");
-    await writeToOutput({ intents, variables, entities }, outputDir);
+    const projectData = await apiWrapper.fetch();
+    await writeToOutput(projectData, outputDir);
   } catch (err) {
     throw err;
   }
   log("done");
 }
 
-export async function writeToOutput(project: Partial<Project>, outputDir: string): Promise<void> {
+export async function writeToOutput(projectData: Partial<Project>, outputDir: string): Promise<void> {
   const LUIS_SCHEMA_VERSION = "3.2.0";
   const VERSION_ID = "0.1";
-  const name = `test.json`;
   return await writeJSON(
-    path.join(outputDir, name),
+    path.join(outputDir, `${projectData.project.name}.json`),
     {
       luis_schema_version: LUIS_SCHEMA_VERSION,
       versionId: VERSION_ID,
-      name: "",
-      desc: "",
+      name: projectData.project.name,
+      desc: projectData.project.platform,
       culture: "en-us",
       tokenizerVersion: "1.0.0",
-      intents: [],
+      intents: projectData.intents.map(intent => ({ name: intent.name })),
       entities: [],
       composites: [],
       closedLists: [],
