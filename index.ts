@@ -5,8 +5,9 @@ import path from "path";
 import chalk from "chalk";
 import * as Sentry from "@sentry/node";
 import { remove, mkdirp, writeJSON } from "fs-extra";
-import { default as APIWrapper, Project } from "./lib/project";
+import { default as APIWrapper } from "./lib/project";
 import { SENTRY_DSN } from "./lib/constants";
+import * as Assets from "./lib/types";
 
 Sentry.init({
   dsn: SENTRY_DSN,
@@ -54,7 +55,7 @@ async function main(args: string[]): Promise<void> {
   log("done");
 }
 
-export async function writeToOutput(projectData: Partial<Project>, outputDir: string): Promise<void> {
+export async function writeToOutput(projectData: Partial<Assets.Project>, outputDir: string): Promise<void> {
   const LUIS_SCHEMA_VERSION = "3.2.0";
   const VERSION_ID = "0.1";
   log("generating json for project");

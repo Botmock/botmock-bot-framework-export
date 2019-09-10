@@ -1,41 +1,7 @@
 import fetch from "node-fetch";
 import EventEmitter from "events";
+// import * as Assets from "./types";
 import { BOTMOCK_API_URL } from "./constants";
-
-export interface Project {
-  project: {
-    id: string;
-    name: string;
-    type: string;
-    platform: string;
-    created_at: {
-      date: string;
-      timezone_type: number;
-      timezone: string
-    };
-    updated_at: {
-      date: string;
-      timezone_type: number;
-      timezone: string;
-    }
-  };
-  board: {
-    board: { root_messages: any[], messages: any[] };
-    slots: {};
-    variables: {}[];
-    created_at: {};
-    updated_at: {};
-  };
-  intents: {
-    id: string;
-    name: string;
-    utterances: any[];
-    created_at: {};
-    updated_at: {};
-    is_global: boolean;
-  }[];
-  entities: any[];
-}
 
 interface Config {
   token: string;
@@ -52,7 +18,10 @@ type DataObj = {
 export default class APIWrapper extends EventEmitter {
   readonly config: Partial<Config>;
   readonly endpoints: Map<string, string>;
-
+  /**
+   * Initializes a new instance of APIWrapper
+   * @param config The Botmock credentials necessary for making API calls
+   */
   constructor(config: Config) {
     super();
     this.config = config;
@@ -63,8 +32,11 @@ export default class APIWrapper extends EventEmitter {
       ["board", `/boards/${this.config.boardId}`]
     ]);
   }
-
-  public async fetch(): Promise<any> {
+  /**
+   * Fetches Botmock project assets
+   * @returns Promise<{}>
+   */
+  public async fetch(): Promise<{}> {
     return (await Promise.all(
       // perform fetch on each endpoint
       Array.from(this.endpoints.values()).map(async (endpoint: string) => {
