@@ -1,7 +1,7 @@
-// import fs from "fs";
-// import Generator from "../lib/Generator";
+// import { stat } from "fs-extra";
+// import execa from "execa";
 
-beforeEach(() => {});
+// beforeEach(() => {});
 
 test("start command produces json file", async () => {
   expect(true).toBe(true);

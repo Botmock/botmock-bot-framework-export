@@ -2,7 +2,6 @@ import "dotenv/config";
 // @ts-ignore
 import pkg from "./package.json";
 import path from "path";
-import assert from "assert";
 import chalk from "chalk";
 import * as Sentry from "@sentry/node";
 import { remove, mkdirp, writeJSON } from "fs-extra";
@@ -13,22 +12,6 @@ Sentry.init({
   dsn: SENTRY_DSN,
   release: `botmock-cli@${pkg.version}`,
 });
-
-try {
-  const MIN_NODE_VERSION = 101600;
-  const numericalNodeVersion = parseInt(
-    process.version
-      .slice(1)
-      .split(".")
-      .map(seq => seq.padStart(2, "0"))
-      .join(""),
-    10
-  );
-  assert.strictEqual(numericalNodeVersion >= MIN_NODE_VERSION, true);
-} catch (err) {
-  Sentry.captureException(err);
-  throw "requires node.js version 10.16.0 or greater";
-}
 
 interface LogConfig {
   hasError: boolean;
