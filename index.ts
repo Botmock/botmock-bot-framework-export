@@ -1,11 +1,13 @@
 import "dotenv/config";
 // @ts-ignore
 import pkg from "./package.json";
+import path from "path";
 import assert from "assert";
 import chalk from "chalk";
 import * as Sentry from "@sentry/node";
+import { remove, mkdirp, writeJSON } from "fs-extra";
+import { getProjectAssets } from "./lib/project";
 import { SENTRY_DSN } from "./lib/constants";
-import { generateJSON } from "./lib/commands/run";
 
 Sentry.init({
   dsn: SENTRY_DSN,
@@ -38,9 +40,24 @@ function log(str: string | number, config: LogConfig = { hasError: false }): voi
 }
 
 async function main(args: string[]): Promise<void> {
-  // const [appId] = args
-  log(args.length);
-  log(typeof generateJSON);
+  let [, , appId, output] = args;
+  if (typeof appId === "undefined") {
+    appId = process.env.LUIS_APP_ID;
+  }
+  const DEFAULT_OUTPUT = "output";
+  const outputDir = path.join(__dirname, output || DEFAULT_OUTPUT);
+  log("recreating output directory")
+  await remove(outputDir);
+  await mkdirp(outputDir);
+  log("fetching botmock assets");
+  await getProjectAssets();
+  try {
+    log("generating json for project");
+    // const name = `${project.name}.json`;
+    // await writeJSON(path.join(outputDir, name), { name: pkg.name });
+  } catch (err) {
+    throw err;
+  }
 }
 
 process.on("unhandledRejection", () => {});
