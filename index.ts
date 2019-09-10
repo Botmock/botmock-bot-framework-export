@@ -13,6 +13,12 @@ Sentry.init({
   release: `botmock-cli@${pkg.version}`,
 });
 
+export interface Project {
+  intents: any[];
+  variables: any[];
+  entities: any[];
+}
+
 interface LogConfig {
   hasError: boolean;
 }
@@ -33,14 +39,20 @@ async function main(args: string[]): Promise<void> {
   await remove(outputDir);
   await mkdirp(outputDir);
   log("fetching botmock assets");
-  await getProjectAssets();
+  const { intents, variables, entities } = await getProjectAssets();
   try {
     log("generating json for project");
-    // const name = `${project.name}.json`;
-    // await writeJSON(path.join(outputDir, name), { name: pkg.name });
+    await writeToOutput({ intents, variables, entities }, outputDir);
   } catch (err) {
     throw err;
+  } finally {
+    log("done")
   }
+}
+
+export async function writeToOutput(project: Partial<Project>, outputDir: string): Promise<void> {
+  // const name = `${project.name}.json`;
+  // await writeJSON(path.join(outputDir, name), { name: pkg.name });
 }
 
 process.on("unhandledRejection", () => {});

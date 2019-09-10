@@ -1,8 +1,6 @@
 import fetch from "node-fetch";
-// import { Project } from "@botmock-api/utils";
+import { Project } from "../"
 
-type Project = {};
-
-export async function getProjectAssets(): Promise<Project> {
+export async function getProjectAssets(): Promise<Partial<Project>> {
   return {}
 }
