@@ -7,8 +7,9 @@ const INTENT_NAME = "intent";
 const FIRST_UTTERANCE = "u";
 const SECOND_UTTERANCE = "uu";
 const PROJECT_NAME = "project";
-const outputDir = join(__dirname, "output");
-const filename = join(outputDir, `${PROJECT_NAME}.json`);
+
+let outputDir: void | string;
+let filename: void | string;
 
 const project = {
   id: "",
@@ -47,31 +48,40 @@ const intents = [{
   is_global: false
 }];
 
-const entities = [];
+const variables = [];
 
 // recreate output directory before each test runs
 beforeEach(async () => {
+  outputDir = join(__dirname, "output");
+  filename = join(outputDir, `${PROJECT_NAME}.json`);
+  // @ts-ignore
   await remove(outputDir);
+  // @ts-ignore
   await mkdirp(outputDir);
-  await writeToOutput({ project, intents, entities }, outputDir);
+  // @ts-ignore
+  await writeToOutput({ project, intents, variables }, outputDir);
 });
 
 afterAll(async () => {
+  // @ts-ignore
   await remove(outputDir);
 });
 
 test("project data ends up in written json", async () => {
+  // @ts-ignore
   const { name } = await readJson(filename);
   expect(name).toBe(PROJECT_NAME);
 });
 
 test("intent data ends up in written json", async () => {
+  // @ts-ignore
   const { intents } = await readJson(filename);
   expect(intents).toHaveLength(1);
   expect(intents[0].name).toBe(INTENT_NAME);
 });
 
 test("utterance data ends up in written json", async () => {
+  // @ts-ignore
   const { utterances } = await readJson(filename);
   expect(utterances).toHaveLength(2);
   expect(
@@ -82,6 +92,7 @@ test("utterance data ends up in written json", async () => {
 });
 
 test("entity data ends up in written json", async () => {
+  // @ts-ignore
   const { entities } = await readJson(filename);
   expect(entities).toHaveLength(0);
 });

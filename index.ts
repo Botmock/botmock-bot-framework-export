@@ -68,7 +68,7 @@ export async function writeToOutput(projectData: Partial<Assets.Project>, output
       culture: "en-us",
       tokenizerVersion: "1.0.0",
       intents: projectData.intents.map(intent => ({ name: intent.name })),
-      entities: projectData.entities.map(entity => ({ name: entity.name, roles: [] })),
+      entities: projectData.variables.map(variable => ({ name: variable.name, roles: [] })),
       composites: [],
       closedLists: [],
       patternAnyEntities: [],
@@ -85,7 +85,11 @@ export async function writeToOutput(projectData: Partial<Assets.Project>, output
             ...intent.utterances.map(utterance => ({
               text: utterance.text.replace(/%/g, ""),
               intent: intent.name,
-              entities: []
+              entities: utterance.variables.map(variable => ({
+                entity: variable.name.replace(/%/g, ""),
+                startPos: variable.start_index,
+                endPos: parseInt(variable.start_index, 10) + variable.name.length - 3
+              }))
             }))
           ]
         }, [])

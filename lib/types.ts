@@ -33,6 +33,7 @@ export interface Project {
     is_global: boolean;
   }[];
   entities: any[];
+  variables: any[];
 }
 
 // type Message = {};

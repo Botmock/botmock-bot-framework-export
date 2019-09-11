@@ -28,8 +28,8 @@ export default class APIWrapper extends EventEmitter {
     this.endpoints = new Map([
       ["project", ""],
       ["intents", "/intents"],
-      ["entities", "/entities"],
-      // ["variables", "/variables"],
+      // ["entities", "/entities"],
+      ["variables", "/variables"],
       ["board", `/boards/${this.config.boardId}`]
     ]);
   }
