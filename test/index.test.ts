@@ -12,27 +12,28 @@ beforeEach(async () => {
 test.todo("fetches project assets");
 
 test("project data ends up in written json", async () => {
+  const PROJECT_NAME= "name";
   const project = {
-    id: 'f4386c70-c7f3-11e9-ab7c-89f5975ad745',
-    name: 'gen',
-    type: 'flow',
-    platform: 'generic',
+    id: "",
+    name: PROJECT_NAME,
+    type: "flow",
+    platform: "generic",
     created_at: {
-      date: '2019-08-26 11:23:39.000000',
+      date: new Date().toLocaleDateString(),
       timezone_type: 3,
-      timezone: 'UTC'
+      timezone: "UTC"
     },
     updated_at: {
-      date: '2019-09-05 17:36:26.000000',
+      date: new Date().toLocaleDateString(),
       timezone_type: 3,
-      timezone: 'UTC'
-    }
+      timezone: "UTC"
+    },
   };
   expect(async () => {
     await writeToOutput({ project, intents: [], entities: [] }, outputDir);
   }).not.toThrow();
   const { name } = await readJson(path.join(outputDir, `${project.name}.json`));
-  expect(name).toBe("gen");
+  expect(name).toBe(PROJECT_NAME);
 });
 
 test.todo("all intents in original project are in json");
