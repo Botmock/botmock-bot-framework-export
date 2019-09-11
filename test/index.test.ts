@@ -9,8 +9,6 @@ beforeEach(async () => {
   await mkdirp(outputDir);
 });
 
-test.todo("fetches project assets");
-
 test("project data ends up in written json", async () => {
   const PROJECT_NAME= "name";
   const project = {
@@ -36,5 +34,6 @@ test("project data ends up in written json", async () => {
   expect(name).toBe(PROJECT_NAME);
 });
 
+test.todo("fetches project assets");
 test.todo("all intents in original project are in json");
 test.todo("all entities in original project are in json");

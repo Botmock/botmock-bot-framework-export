@@ -25,10 +25,21 @@ export interface Project {
   intents: {
     id: string;
     name: string;
-    utterances: any[];
+    utterances: { text: string; variables?: Variable[] }[];
     created_at: {};
     updated_at: {};
     is_global: boolean;
   }[];
   entities: any[];
 }
+
+// type Message = {};
+
+type Variable = {
+  id: string;
+  name: string;
+  type: string;
+  entity: string;
+  default_value: string;
+  start_index: string;
+};

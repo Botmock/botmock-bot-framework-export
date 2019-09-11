@@ -77,7 +77,18 @@ export async function writeToOutput(projectData: Partial<Assets.Project>, output
       model_features: [],
       regex_features: [],
       patterns: [],
-      utterances: [],
+      utterances: projectData.intents
+        .filter(intent => !!intent.utterances.length)
+        .reduce((acc, intent) => {
+          return [
+            ...acc,
+            ...intent.utterances.map(utterance => ({
+              text: utterance.text.replace(/%/g, ""),
+              intent: intent.name,
+              entities: []
+            }))
+          ]
+        }, [])
     }
   );
 }
