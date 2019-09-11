@@ -2,10 +2,13 @@ import { join } from "path";
 import { remove, mkdirp, readJson } from "fs-extra";
 import { writeToOutput } from "../";
 
-const INTENT_NAME = "intent"
+// const ENTITY_NAME = "entity";
+const INTENT_NAME = "intent";
+const FIRST_UTTERANCE = "u";
+const SECOND_UTTERANCE = "uu";
 const PROJECT_NAME = "project";
 const outputDir = join(__dirname, "output");
-const filename = join(outputDir, `${PROJECT_NAME}.json`)
+const filename = join(outputDir, `${PROJECT_NAME}.json`);
 
 const project = {
   id: "",
@@ -27,7 +30,10 @@ const project = {
 const intents = [{
   id: "",
   name: INTENT_NAME,
-  utterances: [],
+  utterances: [
+    { text: FIRST_UTTERANCE, variables: [] },
+    { text: SECOND_UTTERANCE, variables: [] },
+  ],
   created_at: {
     date: new Date().toLocaleDateString(),
     timezone_type: 3,
@@ -67,7 +73,12 @@ test("intent data ends up in written json", async () => {
 
 test("utterance data ends up in written json", async () => {
   const { utterances } = await readJson(filename);
-  expect(utterances).toHaveLength(0);
+  expect(utterances).toHaveLength(2);
+  expect(
+    utterances.every((utterance: any) => (
+      utterance.text === FIRST_UTTERANCE || utterance.text === SECOND_UTTERANCE
+    ))
+  ).toBe(true);
 });
 
 test("entity data ends up in written json", async () => {
