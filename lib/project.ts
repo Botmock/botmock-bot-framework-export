@@ -29,6 +29,7 @@ export default class APIWrapper extends EventEmitter {
       ["project", ""],
       ["intents", "/intents"],
       ["entities", "/entities"],
+      // ["variables", "/variables"],
       ["board", `/boards/${this.config.boardId}`]
     ]);
   }

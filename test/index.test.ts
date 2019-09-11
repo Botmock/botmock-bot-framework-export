@@ -60,7 +60,7 @@ afterAll(async () => {
   await remove(outputDir);
 });
 
-test("project data ends up in written json", async () => {  
+test("project data ends up in written json", async () => {
   const { name } = await readJson(filename);
   expect(name).toBe(PROJECT_NAME);
 });
@@ -86,4 +86,5 @@ test("entity data ends up in written json", async () => {
   expect(entities).toHaveLength(0);
 });
 
+test.todo("all entities referenced in utterances also exist in entities field");
 test.todo("fetches project assets");

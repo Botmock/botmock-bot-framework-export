@@ -1,3 +1,5 @@
+// export type CollectedResponses = {};
+
 export interface Project {
   project: {
     id: string;

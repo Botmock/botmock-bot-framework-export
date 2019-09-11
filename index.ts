@@ -24,13 +24,13 @@ function log(str: string | number, config: LogConfig = { hasError: false }): voi
 }
 
 async function main(args: string[]): Promise<void> {
-  let [, , appId, output] = args;
-  if (typeof appId === "undefined") {
-    appId = process.env.LUIS_APP_ID;
+  let [, , outputDirectory] = args;
+  if (typeof outputDirectory === "undefined") {
+    outputDirectory = process.env.OUTPUT_DIR;
   }
   const DEFAULT_OUTPUT = "output";
-  const outputDir = path.join(__dirname, output || DEFAULT_OUTPUT);
-  log("recreating output directory")
+  const outputDir = path.join(__dirname, outputDirectory || DEFAULT_OUTPUT);
+  log("recreating output directory");
   await remove(outputDir);
   await mkdirp(outputDir);
   log("fetching botmock assets");
