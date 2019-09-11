@@ -11,7 +11,7 @@ import * as Assets from "./lib/types";
 
 Sentry.init({
   dsn: SENTRY_DSN,
-  release: `botmock-cli@${pkg.version}`,
+  release: `botmock-luis-export@${pkg.version}`,
 });
 
 interface LogConfig {

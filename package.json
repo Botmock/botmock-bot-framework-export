@@ -1,6 +1,6 @@
 {
   "name": "botmock-botframework-export",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "import botmock projects in microsoft luis",
   "scripts": {
     "test": "jest",
