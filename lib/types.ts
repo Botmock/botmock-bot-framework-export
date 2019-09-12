@@ -1,4 +1,4 @@
-// export type CollectedResponses = {};
+export type CollectedResponses = { [assetName: string]: any };
 
 export interface Project {
   project: {

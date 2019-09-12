@@ -20,7 +20,7 @@ interface LogConfig {
 
 function log(str: string | number, config: LogConfig = { hasError: false }): void {
   const method = !config.hasError ? "dim" : "bold";
-  console.info(chalk[method](`> ${str}`))
+  console.info(chalk[method](`> ${str}`));
 }
 
 async function main(args: string[]): Promise<void> {

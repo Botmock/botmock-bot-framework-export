@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 import EventEmitter from "events";
-// import * as Assets from "./types";
+import * as Assets from "./types";
 import { BOTMOCK_API_URL } from "./constants";
 
 interface Config {
@@ -35,9 +35,9 @@ export default class APIWrapper extends EventEmitter {
   }
   /**
    * Fetches Botmock project assets
-   * @returns Promise<{}>
+   * @returns Promise<Assets.CollectedResponses>
    */
-  public async fetch(): Promise<{}> {
+  public async fetch(): Promise<Assets.CollectedResponses> {
     return (await Promise.all(
       // perform fetch on each endpoint
       Array.from(this.endpoints.values()).map(async (endpoint: string) => {

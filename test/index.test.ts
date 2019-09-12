@@ -2,7 +2,7 @@ import { join } from "path";
 import { remove, mkdirp, readJson } from "fs-extra";
 import { writeToOutput } from "../";
 
-// const ENTITY_NAME = "entity";
+// const VARIABLE_NAME = "variable";
 const INTENT_NAME = "intent";
 const FIRST_UTTERANCE = "u";
 const SECOND_UTTERANCE = "uu";
