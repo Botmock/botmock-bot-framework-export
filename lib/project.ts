@@ -41,27 +41,27 @@ export default class APIWrapper extends EventEmitter {
     const baseUrl = `${BOTMOCK_API_URL}/teams/${this.config.teamId}/projects/${this.config.projectId}`;
     // return collected results of each promise as a single object
     return (await Promise.all(
-      Array.from(this.endpoints.values()).map(async (endpoint: string) => {
-        const url = `${baseUrl}${endpoint}`;
-        const res = await fetch(url, {
-          headers: {
-            Authorization: `Bearer ${this.config.token}`,
-            Accept: "application/json"
+      Array.from(this.endpoints.values())
+        .map(async (endpoint: string) => {
+          const url = `${baseUrl}${endpoint}`;
+          const res = await fetch(url, {
+            headers: {
+              Authorization: `Bearer ${this.config.token}`,
+              Accept: "application/json"
+            }
+          });
+          if (!res.ok) {
+            this.emit("error", new Error(res.statusText));
+            return;
           }
-        });
-        if (!res.ok) {
-          this.emit("error", new Error(res.statusText));
-          return;
-        }
-        const [assetName] = Array.from(this.endpoints.entries()).find((pair: string[]) => pair[1] === endpoint);
-        this.emit("asset-fetched", assetName);
-        return {
-          assetName,
-          data: await res.json()
-        }
-      })
-    )).reduce((acc, result: DataObj) => {
-      return { ...acc, [result.assetName]: result.data };
-    }, {});
+          const [assetName] = Array.from(this.endpoints.entries()).find((pair: string[]) => pair[1] === endpoint);
+          this.emit("asset-fetched", assetName);
+          return {
+            assetName,
+            data: await res.json()
+          }
+        })
+      ))
+      .reduce((acc, result: DataObj) => ({ ...acc, [result.assetName]: result.data }), {});
   }
 }
