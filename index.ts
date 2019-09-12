@@ -33,7 +33,6 @@ async function main(args: string[]): Promise<void> {
   log("recreating output directory");
   await remove(outputDir);
   await mkdirp(outputDir);
-  log("fetching botmock assets");
   const apiWrapper = new APIWrapper({
     token: process.env.BOTMOCK_TOKEN,
     teamId: process.env.BOTMOCK_TEAM_ID,
@@ -47,6 +46,7 @@ async function main(args: string[]): Promise<void> {
     throw err;
   });
   try {
+    log("fetching botmock assets");
     const projectData = await apiWrapper.fetch();
     await writeToOutput(projectData, outputDir);
   } catch (err) {

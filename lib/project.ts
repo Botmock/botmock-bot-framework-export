@@ -49,7 +49,8 @@ export default class APIWrapper extends EventEmitter {
           }
         });
         if (!res.ok) {
-          throw res.statusText;
+          this.emit("error", new Error(res.statusText));
+          return;
         }
         const [assetName] = Array.from(this.endpoints.entries()).find((pair: string[]) => pair[1] === endpoint);
         this.emit("asset-fetched", assetName);
