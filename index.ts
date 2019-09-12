@@ -42,7 +42,7 @@ async function main(args: string[]): Promise<void> {
   apiWrapper.on("asset-fetched", (assetName: string) => {
     log(`fetched ${assetName}`);
   });
-  apiWrapper.on("error", err => {
+  apiWrapper.on("error", (err: Error) => {
     throw err;
   });
   try {

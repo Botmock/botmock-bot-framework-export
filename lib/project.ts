@@ -30,7 +30,7 @@ export default class APIWrapper extends EventEmitter {
       ["intents", "/intents"],
       // ["entities", "/entities"],
       ["variables", "/variables"],
-      ["board", `/boards/${this.config.boardId}`]
+      // ["board", `/boards/${this.config.boardId}`]
     ]);
   }
   /**
@@ -38,11 +38,12 @@ export default class APIWrapper extends EventEmitter {
    * @returns Promise<Assets.CollectedResponses>
    */
   public async fetch(): Promise<Assets.CollectedResponses> {
+    const baseUrl = `${BOTMOCK_API_URL}/teams/${this.config.teamId}/projects/${this.config.projectId}`;
+    // return collected results of each promise as a single object
     return (await Promise.all(
-      // perform fetch on each endpoint
       Array.from(this.endpoints.values()).map(async (endpoint: string) => {
-        const url = `${BOTMOCK_API_URL}/teams/${this.config.teamId}/projects/${this.config.projectId}`;
-        const res = await fetch(`${url}${endpoint}`, {
+        const url = `${baseUrl}${endpoint}`;
+        const res = await fetch(url, {
           headers: {
             Authorization: `Bearer ${this.config.token}`,
             Accept: "application/json"
