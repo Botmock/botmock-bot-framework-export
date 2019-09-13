@@ -1,5 +1,4 @@
 import "dotenv/config";
-import os from "os";
 import assert from "assert";
 import express from "express";
 import chalk from "chalk";
