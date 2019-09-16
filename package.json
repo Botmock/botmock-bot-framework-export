@@ -1,0 +1,50 @@
+{
+  "name": "botmock-botframework-export",
+  "version": "1.0.0",
+  "description": "import botmock projects in microsoft botframework",
+  "scripts": {
+    "test": "jest",
+    "start": "ts-node index.ts"
+  },
+  "keywords": [
+    "botmock",
+    "botframework",
+    "microsoft",
+    "nodejs"
+  ],
+  "prettier": {
+    "trailingComma": "es5",
+    "tabWidth": 2,
+    "printWidth": 80
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "globals": {
+      "ts-jest": {
+        "tsConfig": "tsconfig.json"
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Botmock/botmock-botframework-export.git"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@sentry/node": "5.6.2",
+    "chalk": "2.4.2",
+    "dotenv": "8.1.0",
+    "fs-extra": "8.1.0",
+    "node-fetch": "2.6.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "8.0.0",
+    "@types/jest": "24.0.18",
+    "@types/node": "12.7.5",
+    "@types/node-fetch": "2.5.0",
+    "jest": "24.9.0",
+    "ts-jest": "24.1.0",
+    "ts-node": "8.4.1",
+    "typescript": "3.6.3"
+  }
+}
