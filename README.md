@@ -1,7 +1,6 @@
 # Botmock Microsoft Bot Framework Integration
 
-> **Note: This repo is in the process of being split in two.**
-> This repo will primarily handle syncing Botmock assets with Luis.ai projects, while the new repo will take over responsibility for Botframework conversations.
+> **Note:** This Repo is now only respobsible for handling the elements of exporting to Microsoft's Bot Framework. If you are looking for the LUIS.ai export script, you can find it (here)[https://github.com/Botmock/botmock-luis-export]. 
 
 [![Build status](https://ci.appveyor.com/api/projects/status/tgof5738pfqppis7?svg=true)](https://ci.appveyor.com/project/nonnontrivial/botmock-botframework-export)
 
