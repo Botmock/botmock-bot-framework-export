@@ -1,50 +1,29 @@
-export type CollectedResponses = { [assetName: string]: any };
-
 export type Intent = {
   id: string;
   name: string;
-  utterances: { text: string; variables?: Variable[] }[];
-  created_at: {};
-  updated_at: {};
-  is_global: boolean;
+  utterances: Utterance[];
 };
 
-export interface Project {
-  project: {
+export type BatchAddLabelsResponse = { value: any; hasError: boolean }[];
+
+export type Utterance = {
+  text: string;
+  variables: {
     id: string;
     name: string;
-    type: string;
-    platform: string;
-    created_at: {
-      date: string;
-      timezone_type: number;
-      timezone: string
-    };
-    updated_at: {
-      date: string;
-      timezone_type: number;
-      timezone: string;
-    }
-  };
-  board: {
-    board: { root_messages: any[], messages: any[] };
-    slots: {};
-    variables: {}[];
-    created_at: {};
-    updated_at: {};
-  };
-  intents: Intent[];
-  entities: any[];
-  variables: any[];
-}
+    entity: string;
+    start_index: number;
+  }[];
+};
 
-// type Message = {};
-
-type Variable = {
+export type Entity = {
   id: string;
   name: string;
-  type: string;
-  entity: string;
-  default_value: string;
-  start_index: string;
+  data: { value: string; synonyms: string[] }[];
 };
+
+export type LuisImportResponse = string | { error: Error };
+
+export type LuisTrainResponse =
+  | { statusId: number; status: string }
+  | { error?: Error };
