@@ -3,6 +3,7 @@ import "dotenv/config";
 import pkg from "./package.json";
 import { join } from "path";
 import { EOL } from "os";
+import { RewriteFrames } from "@sentry/integrations";
 import * as Sentry from "@sentry/node";
 import { writeJson } from "fs-extra";
 import { default as FileWriter, restoreOutput } from "./lib/file";
@@ -11,9 +12,24 @@ import { SENTRY_DSN } from "./lib/constants";
 import { log } from "./lib/util";
 import * as Assets from "./lib/types";
 
+declare global {
+  namespace NodeJS {
+    interface Global {
+      __rootdir__: string;
+    }
+  }
+}
+
+// Set property on global for the sake of stack traces.
+// See https://docs.sentry.io/platforms/node/typescript/#2-changing-events-frames
+global.__rootdir__ = __dirname || process.cwd();
+
 Sentry.init({
   dsn: SENTRY_DSN,
   release: `${pkg.name}@${pkg.version}`,
+  integrations: [new RewriteFrames({
+    root: global.__rootdir__
+  })]
 });
 
 async function main(args: string[]): Promise<void> {
