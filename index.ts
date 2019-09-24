@@ -27,12 +27,12 @@ Sentry.init({
   integrations: [new RewriteFrames({
     root: global.__rootdir__
   })],
-  // beforeSend(event): Sentry.Event {
-  //   if (event.user.email) {
-  //     delete event.user.email;
-  //   }
-  //   return event;
-  // }
+  beforeSend(event): Sentry.Event {
+    if (event.user.email) {
+      delete event.user.email;
+    }
+    return event;
+  }
 });
 
 async function main(args: string[]): Promise<void> {

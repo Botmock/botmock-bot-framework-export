@@ -1,3 +1,5 @@
+import uuid from "uuid/v4";
+import * as utils from "@botmock-api/utils";
 import { remove, mkdirp, writeFile } from "fs-extra";
 import { EventEmitter } from "events";
 import { join } from "path";
@@ -23,6 +25,7 @@ export default class FileWriter extends EventEmitter {
   private init: Date;
   private outputDir: string;
   private projectData: Assets.CollectedResponses;
+  private intentMap: Assets.IntentMap;
   /**
    * Creates instance of FileWriter
    * @param config configuration object containing an outputDir to hold generated
@@ -33,27 +36,37 @@ export default class FileWriter extends EventEmitter {
     this.init = new Date();
     this.outputDir = config.outputDir;
     this.projectData = config.projectData;
+    this.intentMap = utils.createIntentMap(this.projectData.board.board.messages, this.projectData.intents);
+  }
+  /**
+   * Gets full message from board from an id
+   * @param id string
+   * @returns Message
+   */
+  private getMessage(id: string): Assets.Message | void {
+    return this.projectData.board.board.messages.find(message => message.message_id === id);
   }
   /**
    * Writes Luis file output outputDir
    * @returns Promise<void>
    */
-  private async writeLU(): Promise<void> {}
+  // private async writeLU(): Promise<void> {}
   /**
    * Writes Language Generation file within outputDir
    * @returns Promise<void>
    */
   private async writeLG(): Promise<void> {
     const OPENING_LINE = `> generated ${this.init}`;
-    const outputFilePath = join(this.outputDir, `${this.projectData.project.name}.lg`);
+    const { name } = this.projectData.project;
+    const outputFilePath = join(this.outputDir, `${name.replace(/\s/g, "").toLowerCase()}.lg`);
     await writeFile(
       outputFilePath,
-      this.projectData.intents.reduce((acc, intent: Assets.Intent) => {
-        const intentLine = `# ${intent.name}${EOL}`;
-        const utterancesLines = intent.utterances.reduce((accu, utterance) => {
-          return `${accu}- ${utterance.text}${EOL}`;
-        }, "");
-        return `${acc}${EOL}${intentLine}${utterancesLines}`;
+      Array.from(this.intentMap.entries()).reduce((acc, entry: any[]) => {
+        const [idOfMessageConnectedByIntent, connectedIntents] = entry;
+        const message = this.getMessage(idOfMessageConnectedByIntent);
+        const variations = `- ${message.payload.text}`;
+        const template = `# ${uuid()}`;
+        return acc + EOL + template + EOL + variations + EOL;
       }, OPENING_LINE)
     );
   }
@@ -62,7 +75,7 @@ export default class FileWriter extends EventEmitter {
    * @returns Promise<void>
    */
   public async write(): Promise<void> {
-    await this.writeLU();
+    // await this.writeLU();
     await this.writeLG();
   }
 }

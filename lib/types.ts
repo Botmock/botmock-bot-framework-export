@@ -1,5 +1,7 @@
 export type CollectedResponses = { [assetName: string]: any };
 
+export type IntentMap = Map<string, string[]>;
+
 export type Intent = {
   id: string;
   name: string;
@@ -27,7 +29,7 @@ export interface Project {
     }
   };
   board: {
-    board: { root_messages: any[], messages: any[] };
+    board: { root_messages: any[], messages: Message[] };
     slots: {};
     variables: {}[];
     created_at: {};
@@ -38,7 +40,7 @@ export interface Project {
   variables: any[];
 }
 
-// type Message = {};
+export type Message = any;
 
 type Variable = {
   id: string;
