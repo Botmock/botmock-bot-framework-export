@@ -1,8 +1,5 @@
 import "dotenv/config";
-// @ts-ignore
-import pkg from "./package.json";
 import { join } from "path";
-import { EOL } from "os";
 import { RewriteFrames } from "@sentry/integrations";
 import * as Sentry from "@sentry/node";
 import { writeJson } from "fs-extra";
@@ -11,6 +8,8 @@ import { default as APIWrapper } from "./lib/project";
 import { SENTRY_DSN } from "./lib/constants";
 import { log } from "./lib/util";
 import * as Assets from "./lib/types";
+// @ts-ignore
+import pkg from "./package.json";
 
 declare global {
   namespace NodeJS {
@@ -20,8 +19,6 @@ declare global {
   }
 }
 
-// Set property on global for the sake of stack traces.
-// See https://docs.sentry.io/platforms/node/typescript/#2-changing-events-frames
 global.__rootdir__ = __dirname || process.cwd();
 
 Sentry.init({
@@ -29,7 +26,13 @@ Sentry.init({
   release: `${pkg.name}@${pkg.version}`,
   integrations: [new RewriteFrames({
     root: global.__rootdir__
-  })]
+  })],
+  // beforeSend(event): Sentry.Event {
+  //   if (event.user.email) {
+  //     delete event.user.email;
+  //   }
+  //   return event;
+  // }
 });
 
 async function main(args: string[]): Promise<void> {
@@ -56,8 +59,9 @@ async function main(args: string[]): Promise<void> {
     });
     log("fetching botmock assets");
     const projectData: Assets.CollectedResponses = await apiWrapper.fetch();
-    await new FileWriter({ outputDir, projectData }).writeLG();
+    await new FileWriter({ outputDir, projectData }).write();
   } catch (err) {
+    log(err.stack, { hasError: true });
     throw err;
   }
   log("done");
@@ -67,7 +71,6 @@ process.on("unhandledRejection", () => {});
 process.on("uncaughtException", () => {});
 
 main(process.argv).catch(async (err: Error) => {
-  log(`${err.message}${EOL}${err.stack}`, { hasError: true });
   if (!process.env.SHOULD_OPT_OUT_OF_ERROR_REPORTING) {
     Sentry.captureException(err);
   } else {

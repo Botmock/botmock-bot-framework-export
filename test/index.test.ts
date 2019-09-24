@@ -12,6 +12,8 @@ afterAll(async () => {
   await remove(outputDir);
 });
 
+test.todo("write lu method creates lu file in output");
+
 test("write lg method creates file in output", async () => {
   await new FileWriter({ outputDir, projectData: { project: { name: "project" }, intents: [] } }).writeLG();
   expect((await readFile(join(outputDir, "project.lg"))).toString().startsWith(">")).toBe(true);

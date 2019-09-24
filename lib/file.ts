@@ -15,8 +15,8 @@ export async function restoreOutput(outputDir: string): Promise<void> {
 }
 
 interface Config {
-  outputDir: string;
-  projectData: Assets.CollectedResponses
+  readonly outputDir: string;
+  readonly projectData: Assets.CollectedResponses
 }
 
 export default class FileWriter extends EventEmitter {
@@ -35,11 +35,16 @@ export default class FileWriter extends EventEmitter {
     this.projectData = config.projectData;
   }
   /**
+   * Writes Luis file output outputDir
+   * @returns Promise<void>
+   */
+  private async writeLU(): Promise<void> {}
+  /**
    * Writes Language Generation file within outputDir
    * @returns Promise<void>
    */
-  public async writeLG(): Promise<void> {
-    const LG_FILE_COMMENT = `> generated ${this.init}`;
+  private async writeLG(): Promise<void> {
+    const OPENING_LINE = `> generated ${this.init}`;
     const outputFilePath = join(this.outputDir, `${this.projectData.project.name}.lg`);
     await writeFile(
       outputFilePath,
@@ -49,7 +54,15 @@ export default class FileWriter extends EventEmitter {
           return `${accu}- ${utterance.text}${EOL}`;
         }, "");
         return `${acc}${EOL}${intentLine}${utterancesLines}`;
-      }, LG_FILE_COMMENT)
+      }, OPENING_LINE)
     );
+  }
+  /**
+   * Writes all files produced by the exporter
+   * @returns Promise<void>
+   */
+  public async write(): Promise<void> {
+    await this.writeLU();
+    await this.writeLG();
   }
 }
