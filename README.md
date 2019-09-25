@@ -2,9 +2,18 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/tgof5738pfqppis7?svg=true)](https://ci.appveyor.com/project/nonnontrivial/botmock-botframework-export)
 
-> Creates Botframework [LG](https://github.com/Microsoft/BotBuilder-Samples/tree/master/experimental/language-generation#language-generation-preview)  and [LU](https://github.com/Microsoft/botbuilder-tools/blob/master/packages/Ludown/docs/lu-file-format.md) files from a Botmock project.
+> Creates Botframework [Language Generation](https://github.com/Microsoft/BotBuilder-Samples/tree/master/experimental/language-generation#language-generation-preview) files from a Botmock project for use with .NET, C#, or Node JS Bot Framework projects.
 
-These files are able to be used within C# or JS projects in order to take advantage of the new **[Adaptive Dialogs]**(https://github.com/microsoft/BotBuilder-Samples/tree/master/experimental/adaptive-dialog#adaptive-dialog-preview) paradigm in Bot Framework.
+These files are able to be used within .NET, C#, or Node JS projects in order to take advantage of the new **[Adaptive Dialog]**(https://github.com/microsoft/BotBuilder-Samples/tree/master/experimental/adaptive-dialog#adaptive-dialog-preview) paradigm in Bot Framework.
+
+## Prerequisites
+
+- [.NET Core SDK](https://dotnet.microsoft.com/download) version 2.1.x
+
+```bash
+# determine dotnet version
+dotnet --version
+```
 
 ## Guide
 
@@ -12,8 +21,9 @@ These files are able to be used within C# or JS projects in order to take advant
 - run `npm install`
 - run `npm start`
 - create `.env` (see Env section below for more on this)
-- find generated `.lg` and `.lu` files in `/output`.
-- [reference generated files in your existing C# code](https://github.com/microsoft/BotBuilder-Samples/blob/master/experimental/adaptive-dialog/docs/language-generation.md).
+- find generated `.lg` file in `/output`.
+- move generated file to your project directory
+- [reference generated file in your existing C# code](https://github.com/microsoft/BotBuilder-Samples/blob/master/experimental/adaptive-dialog/docs/language-generation.md).
 
 ### Env
 

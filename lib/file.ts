@@ -1,4 +1,3 @@
-// import uuid from "uuid/v4";
 import * as utils from "@botmock-api/utils";
 import { remove, mkdirp, writeFile } from "fs-extra";
 import { EventEmitter } from "events";
@@ -22,7 +21,6 @@ interface Config {
 }
 
 export default class FileWriter extends EventEmitter {
-  // private init: Date;
   private outputDir: string;
   private projectData: Assets.CollectedResponses;
   private intentMap: Assets.IntentMap;
@@ -64,14 +62,14 @@ export default class FileWriter extends EventEmitter {
    * Writes Luis file output outputDir
    * @returns Promise<void>
    */
-  private async writeLU(): Promise<void> {
-    const { name } = this.projectData.project;
-    const outputFilePath = join(this.outputDir, `${name.replace(/\s/g, "").toLowerCase()}.lu`);
-    await writeFile(
-      outputFilePath,
-      this.getGenerationLine() + EOL
-    );
-  }
+  // private async writeLU(): Promise<void> {
+  //   const { name } = this.projectData.project;
+  //   const outputFilePath = join(this.outputDir, `${name.replace(/\s/g, "").toLowerCase()}.lu`);
+  //   await writeFile(
+  //     outputFilePath,
+  //     this.getGenerationLine() + EOL
+  //   );
+  // }
   /**
    * Maps content block to the correct lg format
    * @param message content block
@@ -122,7 +120,7 @@ export default class FileWriter extends EventEmitter {
    * @returns Promise<void>
    */
   public async write(): Promise<void> {
-    await this.writeLU();
+    // await this.writeLU();
     await this.writeLG();
   }
 }
