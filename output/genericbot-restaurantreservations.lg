@@ -1,21 +1,48 @@
-> generated 9/25/2019, 11:27:28 AM
-# 198b33aa-fbc2-4adc-9e66-3edb4f58802f
+> generated 9/25/2019, 11:40:06 AM
+# f61600f7-af1e-44b1-97c0-44898be84645
 - Sure, happy to help! How many people will be under your reservation?
 
-# d2733cb9-6312-4d05-8fbb-b4c5a17f9d3c
+# 4b5e9e51-dc3e-4e51-a920-ee33cb555793
 - I'd be happy to change your reservation. Could I get your reservation number? 
 
-# 5079b5ed-8931-4202-b96e-4f842abd1162
+# 15b6c71c-ba85-4d29-8f0e-27a3fef98c90
 - We're sorry that you will be unable to make it. Can you enter your reservation number?
 
-# 2b4d48e0-32ea-4897-9208-e82723cef194
-- https://botmock.s3.amazonaws.com/1569425195.jpg
+# 1d7e99e0-2eb6-477b-a1fa-dbd1767f13f8
+- ```
+Text
+[
+  {
+    "content_type": "text",
+    "title": "Button",
+    "image_url": "",
+    "payload": "BUTTON"
+  }
+]```
 
-# 74b77489-6fd6-409c-9fc2-64dbbbd24744
+# a011f2d3-f7b4-4921-aa2d-7df409aed629
 - Great! We'll get a table for {ReservationPersonsNumber} People.
 
-# 45e926fd-d7b9-4732-b4f1-0a97e9f615a2
+# 3984f3fa-36f8-460d-a2f4-36078f773097
 - Perfect, we will store your {ReservationPhone} on Record. Your Reservation Number is #45678. See you soon! 
 
-# fe750518-36de-489c-8809-8d5dc6ed0ee5
-undefined
+# c581ce66-9273-41fa-8df9-991929606505
+- ```
+Hi {Customer Name}, welcome to the Botmock Bistro Chat Assistant, how can I help you today?
+[
+  {
+    "type": "postback",
+    "title": "Make a Reservation",
+    "payload": "MAKE_A_RESERVATION"
+  },
+  {
+    "type": "postback",
+    "title": "Change Reservation",
+    "payload": "CHANGE_RESERVATION"
+  },
+  {
+    "type": "postback",
+    "title": "Cancel Reservation",
+    "payload": "CANCEL_RESERVATION"
+  }
+]```

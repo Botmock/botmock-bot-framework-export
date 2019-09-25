@@ -1,4 +1,4 @@
-import uuid from "uuid/v4";
+// import uuid from "uuid/v4";
 import * as utils from "@botmock-api/utils";
 import { remove, mkdirp, writeFile } from "fs-extra";
 import { EventEmitter } from "events";
@@ -78,17 +78,25 @@ export default class FileWriter extends EventEmitter {
    * @returns string
    */
   private mapContentBlockToLGResponse(message: Assets.Message): string {
+    const MULTILINE_SYMBOL = "```";
+    const text = message.payload.hasOwnProperty("text")
+      ? this.wrapEntitiesInString(message.payload.text)
+      : JSON.stringify(message.payload, null, 2);
     switch (message.message_type) {
       // case "api":
       // case "jump":
+      case "quick_replies":
+      case "button":
+        const key = message.message_type === "button" ? "buttons" : "quick_replies";
+        const buttons = JSON.stringify(message.payload[key], null, 2);
+        return `- ${MULTILINE_SYMBOL}${EOL}${text + EOL + buttons}${EOL}${MULTILINE_SYMBOL}`;
       case "image":
         return `- ${message.payload.image_url}`;
       case "generic":
-        const MULTILINE_SYMBOL = "```";
         const payload = JSON.stringify(message.payload, null, 2);
         return `- ${MULTILINE_SYMBOL}${EOL}${payload}${EOL}${MULTILINE_SYMBOL}`;
-      case "text":
-        return `- ${this.wrapEntitiesInString(message.payload.text)}`;
+      default:
+        return `- ${text}`;
     }
   }
   /**
@@ -104,7 +112,7 @@ export default class FileWriter extends EventEmitter {
         const [idOfMessageConnectedByIntent, connectedIntents] = entry;
         const message: Assets.Message = this.getMessage(idOfMessageConnectedByIntent) || {};
         const variations = this.mapContentBlockToLGResponse(message);
-        const template = `# ${uuid()}`;
+        const template = `# ${message.message_id}`;
         return acc + EOL + template + EOL + variations + EOL;
       }, this.getGenerationLine())
     );
