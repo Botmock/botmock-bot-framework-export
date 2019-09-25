@@ -48,7 +48,7 @@ export default class FileWriter extends EventEmitter {
    * @param str string
    * @returns string
    */
-  private wrapEntitiesInString(str: string): string {
+  private wrapEntities(str: string): string {
     return utils.symmetricWrap(str, { l: "{", r: "}" });
   }
   /**
@@ -59,17 +59,23 @@ export default class FileWriter extends EventEmitter {
     return `> generated ${new Date().toLocaleString()}`;
   }
   /**
-   * Writes Luis file output outputDir
+   * Writes Ludown file within outputDir
    * @returns Promise<void>
    */
-  // private async writeLU(): Promise<void> {
-  //   const { name } = this.projectData.project;
-  //   const outputFilePath = join(this.outputDir, `${name.replace(/\s/g, "").toLowerCase()}.lu`);
-  //   await writeFile(
-  //     outputFilePath,
-  //     this.getGenerationLine() + EOL
-  //   );
-  // }
+  private async writeLU(): Promise<void> {
+    const { name } = this.projectData.project;
+    const outputFilePath = join(this.outputDir, `${name.replace(/\s/g, "").toLowerCase()}.lu`);
+    await writeFile(
+      outputFilePath,
+      this.projectData.intents.reduce((acc, intent: Assets.Intent) => {
+        const template = `# ${intent.name}`;
+        const variations = intent.utterances.map((utterance: Assets.Utterance) => (
+          `- ${this.wrapEntities(utterance.text)}`
+        )).join(EOL);
+        return acc + EOL + template + EOL + variations + EOL;
+      }, this.getGenerationLine())
+    );
+  }
   /**
    * Maps content block to the correct lg format
    * @param message content block
@@ -78,7 +84,7 @@ export default class FileWriter extends EventEmitter {
   private mapContentBlockToLGResponse(message: Assets.Message): string {
     const MULTILINE_SYMBOL = "```";
     const text = message.payload.hasOwnProperty("text")
-      ? this.wrapEntitiesInString(message.payload.text)
+      ? this.wrapEntities(message.payload.text)
       : JSON.stringify(message.payload, null, 2);
     switch (message.message_type) {
       // case "api":
@@ -120,7 +126,7 @@ export default class FileWriter extends EventEmitter {
    * @returns Promise<void>
    */
   public async write(): Promise<void> {
-    // await this.writeLU();
+    await this.writeLU();
     await this.writeLG();
   }
 }

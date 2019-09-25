@@ -15,10 +15,12 @@ export type Message = Partial<{
   };
 }>;
 
+export type Utterance = { text: string; variables?: Variable[] };
+
 export type Intent = {
   id: string;
   name: string;
-  utterances: { text: string; variables?: Variable[] }[];
+  utterances: Utterance[];
   created_at: {};
   updated_at: {};
   is_global: boolean;

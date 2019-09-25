@@ -1,1 +1,38 @@
-> generated 9/25/2019, 2:21:03 PM
+> generated 9/25/2019, 2:42:27 PM
+# CancelIntent
+- cancel
+
+# ChangeIntent
+- change
+- change reservation
+
+# Other
+- other
+
+# OtherIntent
+- other
+
+# ReservationNumberIntent
+- 45678
+- It's 45678
+
+# ReservationPersonsIntent
+- {ReservationPersonsNumber}
+- {ReservationPersonsNumber} People
+- We will have {ReservationPersonsNumber} People
+
+# ReservationPhoneIntent
+- {ReservationPhone}
+- It is {ReservationPhone}
+- It's {ReservationPhone}
+
+# ReserveIntent
+- make reservation
+- reserve
+
+# WelcomeIntent
+- hi
+
+# YesIntent
+- yes
+- yeah
