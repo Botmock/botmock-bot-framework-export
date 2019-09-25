@@ -30,7 +30,7 @@ dotnet --version
 - create `.env` (see Env section below for more on this) in the project root
 - find generated `.lg` and `.lu` files in `botmock-botframework-export/output`
 - move generated files to your project directory
-- [reference generated file in your existing .NET, C#, or Node JS code](https://github.com/microsoft/BotBuilder-Samples/blob/master/experimental/adaptive-dialog/docs/language-generation.md).
+- [reference generated Language Generation file in your existing .NET, C#, or Node JS code](https://github.com/microsoft/BotBuilder-Samples/blob/master/experimental/adaptive-dialog/docs/language-generation.md).
 
 ### Env
 
