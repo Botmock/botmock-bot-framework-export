@@ -27,10 +27,10 @@ dotnet --version
 - clone this repository: `git clone git@github.com:Botmock/botmock-botframework-export.git`
 - run `npm install`
 - run `npm start`
-- create `.env` (see Env section below for more on this)
-- find generated `.lg` and `.lu` files in `/output`.
+- create `.env` (see Env section below for more on this) in the project root
+- find generated `.lg` and `.lu` files in `botmock-botframework-export/output`
 - move generated files to your project directory
-- [reference generated file in your existing C# code](https://github.com/microsoft/BotBuilder-Samples/blob/master/experimental/adaptive-dialog/docs/language-generation.md).
+- [reference generated file in your existing .NET, C#, or Node JS code](https://github.com/microsoft/BotBuilder-Samples/blob/master/experimental/adaptive-dialog/docs/language-generation.md).
 
 ### Env
 
