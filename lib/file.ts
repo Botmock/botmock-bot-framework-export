@@ -22,7 +22,7 @@ interface Config {
 }
 
 export default class FileWriter extends EventEmitter {
-  private init: Date;
+  // private init: Date;
   private outputDir: string;
   private projectData: Assets.CollectedResponses;
   private intentMap: Assets.IntentMap;
@@ -33,7 +33,6 @@ export default class FileWriter extends EventEmitter {
    */
   constructor(config: Config) {
     super();
-    this.init = new Date();
     this.outputDir = config.outputDir;
     this.projectData = config.projectData;
     this.intentMap = utils.createIntentMap(this.projectData.board.board.messages, this.projectData.intents);
@@ -47,16 +46,56 @@ export default class FileWriter extends EventEmitter {
     return this.projectData.board.board.messages.find(message => message.message_id === id);
   }
   /**
+   * Wraps any entities in the text with braces
+   * @param str string
+   * @returns string
+   */
+  private wrapEntitiesInString(str: string): string {
+    return utils.symmetricWrap(str, { l: "{", r: "}" });
+  }
+  /**
+   * Creates string with timestamp used in all generated files
+   * @returns string
+   */
+  private getGenerationLine(): string {
+    return `> generated ${new Date().toLocaleString()}`;
+  }
+  /**
    * Writes Luis file output outputDir
    * @returns Promise<void>
    */
-  // private async writeLU(): Promise<void> {}
+  private async writeLU(): Promise<void> {
+    const { name } = this.projectData.project;
+    const outputFilePath = join(this.outputDir, `${name.replace(/\s/g, "").toLowerCase()}.lu`);
+    await writeFile(
+      outputFilePath,
+      this.getGenerationLine() + EOL
+    );
+  }
+  /**
+   * Maps content block to the correct lg format
+   * @param message content block
+   * @returns string
+   */
+  private mapContentBlockToLGResponse(message: Assets.Message): string {
+    switch (message.message_type) {
+      // case "api":
+      // case "jump":
+      case "image":
+        return `- ${message.payload.image_url}`;
+      case "generic":
+        const MULTILINE_SYMBOL = "```";
+        const payload = JSON.stringify(message.payload, null, 2);
+        return `- ${MULTILINE_SYMBOL}${EOL}${payload}${EOL}${MULTILINE_SYMBOL}`;
+      case "text":
+        return `- ${this.wrapEntitiesInString(message.payload.text)}`;
+    }
+  }
   /**
    * Writes Language Generation file within outputDir
    * @returns Promise<void>
    */
   private async writeLG(): Promise<void> {
-    const OPENING_LINE = `> generated ${this.init}`;
     const { name } = this.projectData.project;
     const outputFilePath = join(this.outputDir, `${name.replace(/\s/g, "").toLowerCase()}.lg`);
     await writeFile(
@@ -64,10 +103,10 @@ export default class FileWriter extends EventEmitter {
       Array.from(this.intentMap.entries()).reduce((acc, entry: any[]) => {
         const [idOfMessageConnectedByIntent, connectedIntents] = entry;
         const message: Assets.Message = this.getMessage(idOfMessageConnectedByIntent) || {};
-        const variations = `- ${message.payload.text}`;
+        const variations = this.mapContentBlockToLGResponse(message);
         const template = `# ${uuid()}`;
-        return acc + EOL + template + EOL + utils.symmetricWrap(variations, { l: "{", r: "}" }) + EOL;
-      }, OPENING_LINE)
+        return acc + EOL + template + EOL + variations + EOL;
+      }, this.getGenerationLine())
     );
   }
   /**
@@ -75,7 +114,7 @@ export default class FileWriter extends EventEmitter {
    * @returns Promise<void>
    */
   public async write(): Promise<void> {
-    // await this.writeLU();
+    await this.writeLU();
     await this.writeLG();
   }
 }

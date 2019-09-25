@@ -1,18 +1,21 @@
-> generated Wed Sep 25 2019 09:21:27 GMT-0400 (Eastern Daylight Time)
-# bd34ac13-f396-42d3-b652-37d989433f89
+> generated 9/25/2019, 11:27:28 AM
+# 198b33aa-fbc2-4adc-9e66-3edb4f58802f
 - Sure, happy to help! How many people will be under your reservation?
 
-# 1ec9865c-be6c-4455-a89d-a225240dab8e
+# d2733cb9-6312-4d05-8fbb-b4c5a17f9d3c
 - I'd be happy to change your reservation. Could I get your reservation number? 
 
-# b8ba2816-b752-4d4e-9d6c-f67479e224c5
+# 5079b5ed-8931-4202-b96e-4f842abd1162
 - We're sorry that you will be unable to make it. Can you enter your reservation number?
 
-# 3944abad-f65a-45dc-9fa5-75b76db407ed
+# 2b4d48e0-32ea-4897-9208-e82723cef194
+- https://botmock.s3.amazonaws.com/1569425195.jpg
+
+# 74b77489-6fd6-409c-9fc2-64dbbbd24744
 - Great! We'll get a table for {ReservationPersonsNumber} People.
 
-# 7ed2d1c9-7ea0-4bc1-b0c1-85b9f7f254af
+# 45e926fd-d7b9-4732-b4f1-0a97e9f615a2
 - Perfect, we will store your {ReservationPhone} on Record. Your Reservation Number is #45678. See you soon! 
 
-# 5d02047d-08a6-468c-a5ff-09eca8290e9e
-- Hi {Customer Name}, welcome to the Botmock Bistro Chat Assistant, how can I help you today?
+# fe750518-36de-489c-8809-8d5dc6ed0ee5
+undefined
