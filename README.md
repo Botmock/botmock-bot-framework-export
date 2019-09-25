@@ -2,7 +2,7 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/tgof5738pfqppis7?svg=true)](https://ci.appveyor.com/project/nonnontrivial/botmock-botframework-export)
 
-> Creates Botframework [LG](https://github.com/Microsoft/BotBuilder-Samples/tree/master/experimental/language-generation#language-generation-preview)  and [LU]() files from a Botmock project.
+> Creates Botframework [LG](https://github.com/Microsoft/BotBuilder-Samples/tree/master/experimental/language-generation#language-generation-preview)  and [LU](https://github.com/Microsoft/botbuilder-tools/blob/master/packages/Ludown/docs/lu-file-format.md) files from a Botmock project.
 
 These files are able to be used within C# or JS projects in order to take advantage of the new **[Adaptive Dialogs]**(https://github.com/microsoft/BotBuilder-Samples/tree/master/experimental/adaptive-dialog#adaptive-dialog-preview) paradigm in Bot Framework.
 

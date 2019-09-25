@@ -66,7 +66,7 @@ export default class FileWriter extends EventEmitter {
         const message: Assets.Message = this.getMessage(idOfMessageConnectedByIntent) || {};
         const variations = `- ${message.payload.text}`;
         const template = `# ${uuid()}`;
-        return acc + EOL + template + EOL + variations + EOL;
+        return acc + EOL + template + EOL + utils.symmetricWrap(variations, { l: "{", r: "}" }) + EOL;
       }, OPENING_LINE)
     );
   }
