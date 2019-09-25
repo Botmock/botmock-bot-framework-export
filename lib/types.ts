@@ -2,6 +2,19 @@ export type CollectedResponses = { [assetName: string]: any };
 
 export type IntentMap = Map<string, string[]>;
 
+export type Message = Partial<{
+  message_id: string;
+  message_type: string;
+  next_message_ids: any[];
+  payload: {
+    text?: string;
+    quick_replies?: any[];
+    buttons?: any[];
+    selectedResult: any;
+    image_url: string;
+  };
+}>;
+
 export type Intent = {
   id: string;
   name: string;
@@ -39,8 +52,6 @@ export interface Project {
   entities: any[];
   variables: any[];
 }
-
-export type Message = any;
 
 type Variable = {
   id: string;

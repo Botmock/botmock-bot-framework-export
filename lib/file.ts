@@ -63,7 +63,7 @@ export default class FileWriter extends EventEmitter {
       outputFilePath,
       Array.from(this.intentMap.entries()).reduce((acc, entry: any[]) => {
         const [idOfMessageConnectedByIntent, connectedIntents] = entry;
-        const message = this.getMessage(idOfMessageConnectedByIntent);
+        const message: Assets.Message = this.getMessage(idOfMessageConnectedByIntent) || {};
         const variations = `- ${message.payload.text}`;
         const template = `# ${uuid()}`;
         return acc + EOL + template + EOL + variations + EOL;
