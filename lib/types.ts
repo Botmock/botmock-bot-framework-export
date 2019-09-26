@@ -1,29 +1,65 @@
+export type CollectedResponses = { [assetName: string]: any };
+
+export type IntentMap = Map<string, string[]>;
+
+export type Message = Partial<{
+  message_id: string;
+  message_type: string;
+  next_message_ids: any[];
+  payload: {
+    text?: string;
+    quick_replies?: any[];
+    buttons?: any[];
+    selectedResult: any;
+    image_url: string;
+  };
+}>;
+
+export type Utterance = { text: string; variables?: Variable[] };
+
 export type Intent = {
   id: string;
   name: string;
   utterances: Utterance[];
+  created_at: {};
+  updated_at: {};
+  is_global: boolean;
 };
 
-export type BatchAddLabelsResponse = { value: any; hasError: boolean }[];
-
-export type Utterance = {
-  text: string;
-  variables: {
+export interface Project {
+  project: {
     id: string;
     name: string;
-    entity: string;
-    start_index: number;
-  }[];
-};
+    type: string;
+    platform: string;
+    created_at: {
+      date: string;
+      timezone_type: number;
+      timezone: string
+    };
+    updated_at: {
+      date: string;
+      timezone_type: number;
+      timezone: string;
+    }
+  };
+  board: {
+    board: { root_messages: any[], messages: Message[] };
+    slots: {};
+    variables: {}[];
+    created_at: {};
+    updated_at: {};
+  };
+  intents: Intent[];
+  entities: any[];
+  variables: any[];
+}
 
-export type Entity = {
+type Variable = {
   id: string;
   name: string;
-  data: { value: string; synonyms: string[] }[];
+  type: string;
+  entity: string;
+  default_value: string;
+  start_index: string;
 };
-
-export type LuisImportResponse = string | { error: Error };
-
-export type LuisTrainResponse =
-  | { statusId: number; status: string }
-  | { error?: Error };
