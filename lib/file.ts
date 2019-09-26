@@ -1,4 +1,5 @@
 import * as utils from "@botmock-api/utils";
+import { wrapEntitiesWithChar } from "@botmock-api/text";
 import { remove, mkdirp, writeFile } from "fs-extra";
 import { EventEmitter } from "events";
 import { join } from "path";
@@ -49,7 +50,7 @@ export default class FileWriter extends EventEmitter {
    * @returns string
    */
   private wrapEntities(str: string): string {
-    return utils.symmetricWrap(str, { l: "{", r: "}" });
+    return wrapEntitiesWithChar(str, "{");
   }
   /**
    * Creates string with timestamp used in all generated files
