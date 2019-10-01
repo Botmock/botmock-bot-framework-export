@@ -22,6 +22,10 @@ node --version
 dotnet --version
 ```
 
+- [C#, .NET, or Node JS project able to consume `.lg` and `.lu` files](https://github.com/microsoft/BotBuilder-Samples/tree/master/experimental/adaptive-dialog/csharp_dotnetcore/04.core-bot#using-cli)
+
+> Note that to take advantage of the generated `.lu` file, you must have a [luis.ai account](https://www.luis.ai/).
+
 ## Guide
 
 - clone this repository: `git clone git@github.com:Botmock/botmock-botframework-export.git`
