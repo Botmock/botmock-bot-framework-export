@@ -1,8 +1,6 @@
 import * as flow from "@botmock-api/flow";
-import * as utils from "@botmock-api/utils";
 import { wrapEntitiesWithChar } from "@botmock-api/text";
 import { remove, mkdirp, writeFile } from "fs-extra";
-import { EventEmitter } from "events";
 import { join } from "path";
 import { EOL } from "os";
 import * as Assets from "./types";
@@ -22,9 +20,8 @@ interface Config {
   readonly projectData: flow.CollectedResponses
 }
 
-export default class FileWriter extends EventEmitter {
+export default class FileWriter extends flow.AbstractProject {
   private outputDir: string;
-  private projectData: flow.CollectedResponses;
   private intentMap: Assets.IntentMap;
   private abstractProject: any;
   /**
@@ -33,13 +30,9 @@ export default class FileWriter extends EventEmitter {
    * files, and projectData for the original botmock flow project
    */
   constructor(config: Config & any) {
-    super();
+    super({ projectData: config.projectData });
     this.outputDir = config.outputDir;
-    this.projectData = config.projectData;
-    this.abstractProject = new flow.AbstractProject({ projectData: config.projectData });
-    this.intentMap = utils.createIntentMap(this.projectData.board.board.messages, this.projectData.intents);
-
-    // this.abstractProject.representRequirements();
+    this.intentMap = this.segmentizeBoardFromMessages({});
   }
   /**
    * Wraps any entities in the text with braces
