@@ -1,3 +1,4 @@
+import * as flow from "@botmock-api/flow";
 import * as utils from "@botmock-api/utils";
 import { wrapEntitiesWithChar } from "@botmock-api/text";
 import { remove, mkdirp, writeFile } from "fs-extra";
@@ -18,31 +19,27 @@ export async function restoreOutput(outputDir: string): Promise<void> {
 
 interface Config {
   readonly outputDir: string;
-  readonly projectData: Assets.CollectedResponses
+  readonly projectData: flow.CollectedResponses
 }
 
 export default class FileWriter extends EventEmitter {
   private outputDir: string;
-  private projectData: Assets.CollectedResponses;
+  private projectData: flow.CollectedResponses;
   private intentMap: Assets.IntentMap;
+  private abstractProject: any;
   /**
    * Creates instance of FileWriter
    * @param config configuration object containing an outputDir to hold generated
    * files, and projectData for the original botmock flow project
    */
-  constructor(config: Config) {
+  constructor(config: Config & any) {
     super();
     this.outputDir = config.outputDir;
     this.projectData = config.projectData;
+    this.abstractProject = new flow.AbstractProject({ projectData: config.projectData });
     this.intentMap = utils.createIntentMap(this.projectData.board.board.messages, this.projectData.intents);
-  }
-  /**
-   * Gets full message from board from an id
-   * @param id string
-   * @returns Message
-   */
-  private getMessage(id: string): Assets.Message | void {
-    return this.projectData.board.board.messages.find(message => message.message_id === id);
+
+    // this.abstractProject.representRequirements();
   }
   /**
    * Wraps any entities in the text with braces
@@ -56,7 +53,7 @@ export default class FileWriter extends EventEmitter {
    * Creates string with timestamp used in all generated files
    * @returns string
    */
-  private getGenerationLine(): string {
+  private createGenerationLine(): string {
     return `> generated ${new Date().toLocaleString()}`;
   }
   /**
@@ -74,7 +71,7 @@ export default class FileWriter extends EventEmitter {
           `- ${this.wrapEntities(utterance.text)}`
         )).join(EOL);
         return acc + EOL + template + EOL + variations + EOL;
-      }, this.getGenerationLine())
+      }, this.createGenerationLine())
     );
   }
   /**
@@ -115,11 +112,11 @@ export default class FileWriter extends EventEmitter {
       outputFilePath,
       Array.from(this.intentMap.entries()).reduce((acc, entry: any[]) => {
         const [idOfMessageConnectedByIntent, connectedIntents] = entry;
-        const message: Assets.Message = this.getMessage(idOfMessageConnectedByIntent) || {};
+        const message: Assets.Message = this.abstractProject.getMessage(idOfMessageConnectedByIntent) || {};
         const variations = this.mapContentBlockToLGResponse(message);
         const template = `# ${message.message_id}`;
         return acc + EOL + template + EOL + variations + EOL;
-      }, this.getGenerationLine())
+      }, this.createGenerationLine())
     );
   }
   /**
