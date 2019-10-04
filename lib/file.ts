@@ -78,7 +78,9 @@ export default class FileWriter extends flow.AbstractProject {
       : JSON.stringify(message.payload, null, 2);
     switch (message.message_type) {
       // case "api":
-      // case "jump":
+      case "jump":
+        const { selectedResult } = message.payload;
+        return `- ${MULTILINE_SYMBOL}${EOL}${selectedResult.value}${EOL}${MULTILINE_SYMBOL}`;
       case "quick_replies":
       case "button":
         const key = message.message_type === "button" ? "buttons" : "quick_replies";
@@ -94,6 +96,13 @@ export default class FileWriter extends flow.AbstractProject {
     }
   }
   /**
+   * Computes the conversation scope data for the project
+   * @param template string
+   * @returns string
+   * @todo
+   */
+  private findRequirementsForTemplate(template: string): void {}
+  /**
    * Writes Language Generation file within outputDir
    * @returns Promise<void>
    */
@@ -103,11 +112,12 @@ export default class FileWriter extends flow.AbstractProject {
     await writeFile(
       outputFilePath,
       Array.from(this.intentMap.entries()).reduce((acc, entry: any[]) => {
-        const [idOfMessageConnectedByIntent, connectedIntents] = entry;
+        const [idOfMessageConnectedByIntent, connectedIntentIds] = entry;
         // @ts-ignore
         const message: Assets.Message = this.getMessage(idOfMessageConnectedByIntent) || {};
         const variations = this.mapContentBlockToLGResponse(message);
         const template = `# ${message.message_id}`;
+        // const requirements = this.findRequirementsForTemplate(template);
         return acc + EOL + template + EOL + variations + EOL;
       }, this.createGenerationLine())
     );
