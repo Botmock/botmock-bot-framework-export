@@ -53,18 +53,18 @@ export default class FileWriter extends flow.AbstractProject {
    * @returns Promise<void>
    */
   private async writeLU(): Promise<void> {
-    // const { name } = this.projectData.project;
-    // const outputFilePath = join(this.outputDir, `${name.replace(/\s/g, "").toLowerCase()}.lu`);
-    // await writeFile(
-    //   outputFilePath,
-    //   this.projectData.intents.reduce((acc, intent: Assets.Intent) => {
-    //     const template = `# ${intent.name}`;
-    //     const variations = intent.utterances.map((utterance: Assets.Utterance) => (
-    //       `- ${this.wrapEntities(utterance.text)}`
-    //     )).join(EOL);
-    //     return acc + EOL + template + EOL + variations + EOL;
-    //   }, this.createGenerationLine())
-    // );
+    const { name } = this.projectData.project;
+    const outputFilePath = join(this.outputDir, `${name.replace(/\s/g, "").toLowerCase()}.lu`);
+    await writeFile(
+      outputFilePath,
+      this.projectData.intents.reduce((acc, intent: Assets.Intent) => {
+        const template = `# ${intent.name}`;
+        const variations = intent.utterances.map((utterance: Assets.Utterance) => (
+          `- ${this.wrapEntities(utterance.text)}`
+        )).join(EOL);
+        return acc + EOL + template + EOL + variations + EOL;
+      }, this.createGenerationLine())
+    );
   }
   /**
    * Maps content block to the correct lg format
@@ -98,18 +98,19 @@ export default class FileWriter extends flow.AbstractProject {
    * @returns Promise<void>
    */
   private async writeLG(): Promise<void> {
-    // const { name } = this.projectData.project;
-    // const outputFilePath = join(this.outputDir, `${name.replace(/\s/g, "").toLowerCase()}.lg`);
-    // await writeFile(
-    //   outputFilePath,
-    //   Array.from(this.intentMap.entries()).reduce((acc, entry: any[]) => {
-    //     const [idOfMessageConnectedByIntent, connectedIntents] = entry;
-    //     const message: Assets.Message = this.abstractProject.getMessage(idOfMessageConnectedByIntent) || {};
-    //     const variations = this.mapContentBlockToLGResponse(message);
-    //     const template = `# ${message.message_id}`;
-    //     return acc + EOL + template + EOL + variations + EOL;
-    //   }, this.createGenerationLine())
-    // );
+    const { name } = this.projectData.project;
+    const outputFilePath = join(this.outputDir, `${name.replace(/\s/g, "").toLowerCase()}.lg`);
+    await writeFile(
+      outputFilePath,
+      Array.from(this.intentMap.entries()).reduce((acc, entry: any[]) => {
+        const [idOfMessageConnectedByIntent, connectedIntents] = entry;
+        // @ts-ignore
+        const message: Assets.Message = this.getMessage(idOfMessageConnectedByIntent) || {};
+        const variations = this.mapContentBlockToLGResponse(message);
+        const template = `# ${message.message_id}`;
+        return acc + EOL + template + EOL + variations + EOL;
+      }, this.createGenerationLine())
+    );
   }
   /**
    * Writes all files produced by the exporter
