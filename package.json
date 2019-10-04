@@ -33,7 +33,6 @@
   "dependencies": {
     "@botmock-api/flow": "0.1.0",
     "@botmock-api/text": "0.2.2",
-    "@botmock-api/utils": "2.3.1",
     "@sentry/integrations": "5.6.1",
     "@sentry/node": "5.6.2",
     "chalk": "2.4.2",
@@ -45,7 +44,7 @@
   "devDependencies": {
     "@types/fs-extra": "8.0.0",
     "@types/jest": "24.0.18",
-    "@types/node": "12.7.9",
+    "@types/node": "12.7.11",
     "@types/node-fetch": "2.5.2",
     "@types/uuid": "3.4.5",
     "jest": "24.9.0",
