@@ -12,11 +12,6 @@
     "microsoft",
     "nodejs"
   ],
-  "prettier": {
-    "trailingComma": "es5",
-    "tabWidth": 2,
-    "printWidth": 80
-  },
   "jest": {
     "preset": "ts-jest",
     "globals": {

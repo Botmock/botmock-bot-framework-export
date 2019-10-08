@@ -6,13 +6,14 @@ export type Message = Partial<{
   message_id: string;
   message_type: string;
   next_message_ids: any[];
-  payload: {
-    text?: string;
-    quick_replies?: any[];
-    buttons?: any[];
+  payload: Partial<{
+    nodeName: string;
+    text: string;
+    quick_replies: any[];
+    buttons: any[];
     selectedResult: any;
     image_url: string;
-  };
+  }>;
 }>;
 
 export type Utterance = { text: string; variables?: Variable[] };

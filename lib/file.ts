@@ -1,9 +1,11 @@
 import * as flow from "@botmock-api/flow";
 import { wrapEntitiesWithChar } from "@botmock-api/text";
 import { remove, mkdirp, writeFile } from "fs-extra";
+// import fetch from "node-fetch";
 import { join } from "path";
 import { EOL } from "os";
 import * as Assets from "./types";
+import { connect } from "tls";
 
 /**
  * Recreates given path
@@ -23,6 +25,7 @@ interface Config {
 export default class FileWriter extends flow.AbstractProject {
   private outputDir: string;
   private intentMap: flow.SegmentizedStructure;
+  private slotsMap: flow.SlotStructure;
   /**
    * Creates instance of FileWriter
    * @param config configuration object containing an outputDir to hold generated
@@ -31,7 +34,8 @@ export default class FileWriter extends flow.AbstractProject {
   constructor(config: Config & any) {
     super({ projectData: config.projectData });
     this.outputDir = config.outputDir;
-    this.intentMap = this.segmentizeBoardFromMessages({});
+    this.intentMap = this.segmentizeBoardFromMessages();
+    this.slotsMap = this.representRequirementsForIntents();
   }
   /**
    * Wraps any entities in the text with braces
@@ -62,16 +66,22 @@ export default class FileWriter extends flow.AbstractProject {
         const variations = intent.utterances.map((utterance: Assets.Utterance) => (
           `- ${this.wrapEntities(utterance.text)}`
         )).join(EOL);
-        return acc + EOL + template + EOL + variations + EOL;
+        return [acc, template, variations].join(EOL) + EOL;
       }, this.createGenerationLine())
     );
   }
+  /**
+   * Fetches project referenced in jump node
+   * @param message 
+   * @todo
+   */
+  // private async fetchJumpedToProject(): Promise<void> {}
   /**
    * Maps content block to the correct lg format
    * @param message content block
    * @returns string
    */
-  private mapContentBlockToLGResponse(message: Assets.Message): string {
+  private mapContentBlockToLGResponse(message: Assets.Message, state: string): string {
     const MULTILINE_SYMBOL = "```";
     const text = message.payload.hasOwnProperty("text")
       ? this.wrapEntities(message.payload.text)
@@ -101,7 +111,9 @@ export default class FileWriter extends flow.AbstractProject {
    * @returns string
    * @todo
    */
-  private findRequirementsForTemplate(template: string): void {}
+  private findRequirementsForTemplate(connectedIntentIds: string[]): string {
+    return "";
+  }
   /**
    * Writes Language Generation file within outputDir
    * @returns Promise<void>
@@ -115,10 +127,11 @@ export default class FileWriter extends flow.AbstractProject {
         const [idOfMessageConnectedByIntent, connectedIntentIds] = entry;
         // @ts-ignore
         const message: Assets.Message = this.getMessage(idOfMessageConnectedByIntent) || {};
-        const variations = this.mapContentBlockToLGResponse(message);
+        const requiredState = this.findRequirementsForTemplate(connectedIntentIds);
+        const variations = this.mapContentBlockToLGResponse(message, requiredState);
+        const comment = `> ${message.payload.nodeName}`;
         const template = `# ${message.message_id}`;
-        // const requirements = this.findRequirementsForTemplate(template);
-        return acc + EOL + template + EOL + variations + EOL;
+        return [acc, comment, template, variations].join(EOL) + EOL;
       }, this.createGenerationLine())
     );
   }
