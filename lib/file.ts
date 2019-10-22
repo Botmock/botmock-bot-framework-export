@@ -1,7 +1,6 @@
 import * as flow from "@botmock-api/flow";
 import { wrapEntitiesWithChar } from "@botmock-api/text";
 import { remove, mkdirp, writeFile } from "fs-extra";
-// import fetch from "node-fetch";
 import { join } from "path";
 import { EOL } from "os";
 import * as Assets from "./types";
@@ -22,10 +21,10 @@ interface Config {
 }
 
 export default class FileWriter extends flow.AbstractProject {
+  static multilineCharacters = "```";
   private outputDir: string;
   private intentMap: flow.SegmentizedStructure;
   private slotsMap: flow.SlotStructure;
-  private multiline: string;
   /**
    * Creates instance of FileWriter
    * @param config configuration object containing an outputDir to hold generated
@@ -36,15 +35,14 @@ export default class FileWriter extends flow.AbstractProject {
     this.outputDir = config.outputDir;
     this.intentMap = this.segmentizeBoardFromMessages();
     this.slotsMap = this.representRequirementsForIntents();
-    this.multiline = "```";
   }
   /**
    * Wraps any entities in the text with braces
-   * @param str string
+   * @param text string
    * @returns string
    */
-  private wrapEntities(str: string): string {
-    return wrapEntitiesWithChar(str, "{");
+  private wrapEntities(text: string): string {
+    return wrapEntitiesWithChar(text, "{");
   }
   /**
    * Creates string with timestamp used in all generated files
@@ -83,23 +81,24 @@ export default class FileWriter extends flow.AbstractProject {
    * @returns string
    */
   private mapContentBlockToLGResponse(message: Assets.Message, state: string): string {
+    const { multilineCharacters } = FileWriter;
     const text = message.payload.hasOwnProperty("text")
       ? this.wrapEntities(message.payload.text)
       : JSON.stringify(message.payload, null, 2);
     switch (message.message_type) {
       case "jump":
         const { selectedResult } = message.payload;
-        return `- ${this.multiline}${EOL}${selectedResult.value}${EOL}${this.multiline}`;
+        return `- ${multilineCharacters}${EOL}${selectedResult.value}${EOL}${multilineCharacters}`;
       case "quick_replies":
       case "button":
         const key = message.message_type === "button" ? "buttons" : "quick_replies";
         const buttons = JSON.stringify(message.payload[key], null, 2);
-        return `- ${this.multiline}${EOL}${text + EOL + buttons}${EOL}${this.multiline}`;
+        return `- ${multilineCharacters}${EOL}${text + EOL + buttons}${EOL}${multilineCharacters}`;
       case "image":
         return `- ${message.payload.image_url}`;
       case "generic":
         const payload = JSON.stringify(message.payload, null, 2);
-        return `- ${this.multiline}${EOL}${payload}${EOL}${this.multiline}`;
+        return `- ${multilineCharacters}${EOL}${payload}${EOL}${multilineCharacters}`;
       default:
         // console.log(message);
         return `- ${text}`;
