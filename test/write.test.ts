@@ -1,5 +1,6 @@
 import { join } from "path";
 import { remove, readFile, readdir } from "fs-extra";
+// import { mockProjectData, variableName } from "./fixtures";
 import { default as FileWriter, restoreOutput } from "../lib/file";
 import * as Assets from "../lib/types";
 

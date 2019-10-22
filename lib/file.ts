@@ -5,7 +5,6 @@ import { remove, mkdirp, writeFile } from "fs-extra";
 import { join } from "path";
 import { EOL } from "os";
 import * as Assets from "./types";
-import { connect } from "tls";
 
 /**
  * Recreates given path
@@ -26,6 +25,7 @@ export default class FileWriter extends flow.AbstractProject {
   private outputDir: string;
   private intentMap: flow.SegmentizedStructure;
   private slotsMap: flow.SlotStructure;
+  private multiline: string;
   /**
    * Creates instance of FileWriter
    * @param config configuration object containing an outputDir to hold generated
@@ -36,6 +36,7 @@ export default class FileWriter extends flow.AbstractProject {
     this.outputDir = config.outputDir;
     this.intentMap = this.segmentizeBoardFromMessages();
     this.slotsMap = this.representRequirementsForIntents();
+    this.multiline = "```";
   }
   /**
    * Wraps any entities in the text with braces
@@ -82,26 +83,25 @@ export default class FileWriter extends flow.AbstractProject {
    * @returns string
    */
   private mapContentBlockToLGResponse(message: Assets.Message, state: string): string {
-    const MULTILINE_SYMBOL = "```";
     const text = message.payload.hasOwnProperty("text")
       ? this.wrapEntities(message.payload.text)
       : JSON.stringify(message.payload, null, 2);
     switch (message.message_type) {
-      // case "api":
       case "jump":
         const { selectedResult } = message.payload;
-        return `- ${MULTILINE_SYMBOL}${EOL}${selectedResult.value}${EOL}${MULTILINE_SYMBOL}`;
+        return `- ${this.multiline}${EOL}${selectedResult.value}${EOL}${this.multiline}`;
       case "quick_replies":
       case "button":
         const key = message.message_type === "button" ? "buttons" : "quick_replies";
         const buttons = JSON.stringify(message.payload[key], null, 2);
-        return `- ${MULTILINE_SYMBOL}${EOL}${text + EOL + buttons}${EOL}${MULTILINE_SYMBOL}`;
+        return `- ${this.multiline}${EOL}${text + EOL + buttons}${EOL}${this.multiline}`;
       case "image":
         return `- ${message.payload.image_url}`;
       case "generic":
         const payload = JSON.stringify(message.payload, null, 2);
-        return `- ${MULTILINE_SYMBOL}${EOL}${payload}${EOL}${MULTILINE_SYMBOL}`;
+        return `- ${this.multiline}${EOL}${payload}${EOL}${this.multiline}`;
       default:
+        // console.log(message);
         return `- ${text}`;
     }
   }
