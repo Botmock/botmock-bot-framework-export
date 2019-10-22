@@ -1,80 +1,34 @@
 import { join } from "path";
-import { remove, readFile, readdir } from "fs-extra";
-// import { mockProjectData, variableName } from "./fixtures";
-import { default as FileWriter, restoreOutput } from "../lib/file";
-import * as Assets from "../lib/types";
+import { tmpdir } from "os";
+import { mkdirp, remove, readFile, readdir } from "fs-extra";
+import { mockProjectData } from "./fixtures";
+import { default as FileWriter } from "../lib/file";
 
-let projectData: Assets.CollectedResponses;
-const outputDir = join(__dirname, "output");
-const PROJECT_NAME = "project";
+let fileWriterInstance: FileWriter;
+const outputDirectory = join(tmpdir(), mockProjectData.project.platform);
+beforeAll(async () => {
+  await mkdirp(outputDirectory);
+  fileWriterInstance = new FileWriter({ outputDir: outputDirectory, projectData: mockProjectData });
+});
 
 beforeEach(async () => {
-  await restoreOutput(outputDir);
-  projectData = {
-    project: {
-      id: "",
-      name: PROJECT_NAME,
-      type: "",
-      platform: "",
-      created_at: {
-        date: new Date().toLocaleString(),
-        timezone_type: 3,
-        timezone: ""
-      },
-      updated_at: {
-        date: new Date().toLocaleString(),
-        timezone_type: 3,
-        timezone: ""
-      }
-    },
-    intents: [],
-    entities: [],
-    variables: [],
-    board: {
-      board: {
-        root_messages: [], messages: [{
-          message_id: "",
-          message_type: "",
-          next_message_ids: [],
-          previous_message_ids: [],
-          is_root: false,
-          payload: {
-            nodeName: "",
-            context: [],
-            text: "",
-            workflow_index: 1
-          }
-        }]
-      },
-      slots: {},
-      variables: [],
-      created_at: {
-        date: new Date().toLocaleString(),
-        timezone_type: 3,
-        timezone: ""
-      },
-      updated_at: {
-        date: new Date().toLocaleString(),
-        timezone_type: 3,
-        timezone: ""
-      }
-    }
-  }
+  await fileWriterInstance.write();
 });
 
-afterAll(async () => {
-  await remove(outputDir);
+describe("file creation", () => {
+  test("creates correctly named files", async () => {
+    const contents = await readdir(outputDirectory);
+    const projectName = "__botframework-project-name";
+    expect(contents.includes(`${projectName}.lu`)).toBe(true);
+    expect(contents.includes(`${projectName}.lg`)).toBe(true);
+  });
 });
 
-test("creates correct number of files", async () => {
-  await new FileWriter({ outputDir, projectData }).write();
-  expect(await readdir(outputDir)).toHaveLength(2);
-});
-
-test("write method creates files in output", async () => {
-  const OPENING_CHARACTERS = "> ";
-  await new FileWriter({ outputDir, projectData }).write();
-  expect(
-    (await readFile(join(outputDir, `${PROJECT_NAME}.lg`))).toString().startsWith(OPENING_CHARACTERS)
-  ).toBe(true);
+describe("file content", () => {
+  describe("lg file", () => {
+    test.todo("includes variations defined in original project");
+  });
+  describe("lu file", () => {
+    test.todo("includes all utterences for each intent in original project");
+  });
 });
