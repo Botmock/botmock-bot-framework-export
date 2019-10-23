@@ -1,9 +1,9 @@
 import * as flow from "@botmock-api/flow";
 import { wrapEntitiesWithChar } from "@botmock-api/text";
-import { remove, mkdirp, writeFile } from "fs-extra";
-import { join } from "path";
+import { remove, mkdirp, writeFile, outputFile } from "fs-extra";
+import { join, basename } from "path";
 import { EOL } from "os";
-import * as Assets from "./types";
+import * as BotFramework from "./types";
 
 /**
  * Recreates given path
@@ -67,12 +67,12 @@ export default class FileWriter extends flow.AbstractProject {
    * 
    * @returns Promise<void>
    */
-  private async writeLU(): Promise<void> {
+  private async writeLUFile(): Promise<void> {
     const { name } = this.projectData.project;
     const outputFilePath = join(this.outputDir, `${this.formatFilename(name)}.lu`);
     await writeFile(
       outputFilePath,
-      this.projectData.intents.reduce((acc, intent: Assets.Intent) => {
+      this.projectData.intents.reduce((acc, intent: flow.Intent) => {
         const template = `# ${intent.name}`;
         const variations = intent.utterances.map(utterance => (
           `- ${this.wrapEntities(utterance.text)}`
@@ -80,14 +80,15 @@ export default class FileWriter extends flow.AbstractProject {
         return [acc, template, variations].join(EOL) + EOL;
       }, this.createGenerationLine())
     );
+    this.emit("write-complete", { filepath: basename(outputFilePath) });
   }
   /**
    * Maps content block to variations in a template
    * @param message content block
-   * @param requiredState {}[]
+   * @param requiredState RequiredState
    * @returns string
    */
-  private createVariationsFromMessageAndRequiredState(message: Assets.Message, requiredState: {}[]): string {
+  private createVariationsFromMessageAndRequiredState(message: flow.Message, requiredState: BotFramework.RequiredState): string {
     const { multilineCharacters } = FileWriter;
     const text = message.payload.hasOwnProperty("text")
       ? this.wrapEntities(message.payload.text)
@@ -111,12 +112,17 @@ export default class FileWriter extends flow.AbstractProject {
     }
   }
   /**
-   * Computes the conversation scope data for the project
+   * Finds required slots for intents connected to message
    * @param template string
-   * @returns string[]
+   * @returns BotFramework.RequiredState
    */
-  private findRequiredSlotsForConnectedIntents(connectedIntentIds: string[]): string[] {
-    return [];
+  private findRequiredSlotsForConnectedIntents(idsOfConnectedIntents: string[]): BotFramework.RequiredState {
+    return Array.from(this.slotsMap)
+      .filter((pair: any) => {
+        const [intentId] = pair;
+        return idsOfConnectedIntents.includes(intentId)
+      })
+      .map((pair: any) => ({}));
   }
   /**
    * Writes Language Generation file within outputDir
@@ -126,30 +132,35 @@ export default class FileWriter extends flow.AbstractProject {
    * 
    * @returns Promise<void>
    */
-  private async writeLG(): Promise<void> {
+  private async writeLGFile(): Promise<void> {
     const { name } = this.projectData.project;
     const outputFilePath = join(this.outputDir, `${this.formatFilename(name)}.lg`);
     await writeFile(
       outputFilePath,
       Array.from(this.boardStructureByMessagesConnectedByIntents.entries())
-        .reduce((acc, entry: any[]) => {
-          const [idOfMessageConnectedByIntent, connectedIntentIds] = entry;
-          // @ts-ignore
-          const message: Assets.Message = this.getMessage(idOfMessageConnectedByIntent) || {};
-          const requiredState = this.findRequiredSlotsForConnectedIntents(connectedIntentIds);
+        .reduce((acc, entry: [string, string[]]) => {
+          const [idOfMessageConnectedByIntent, idsOfConnectedIntents] = entry;
+          const message = this.getMessage(idOfMessageConnectedByIntent) as flow.Message;
+          const requiredState = this.findRequiredSlotsForConnectedIntents(idsOfConnectedIntents);
           const variations = this.createVariationsFromMessageAndRequiredState(message, requiredState);
           const comment = `> ${message.payload.nodeName}`;
           const template = `# ${message.message_id}`;
-          return [acc, comment, template, variations].join(EOL) + EOL;
+          return [
+            acc,
+            comment,
+            template,
+            variations
+          ].join(EOL) + EOL;
         }, this.createGenerationLine())
     );
+    this.emit("write-complete", { filepath: basename(outputFilePath) });
   }
   /**
    * Writes all files produced by the exporter
    * @returns Promise<void>
    */
   public async write(): Promise<void> {
-    await this.writeLU();
-    await this.writeLG();
+    await this.writeLUFile();
+    await this.writeLGFile();
   }
 }
