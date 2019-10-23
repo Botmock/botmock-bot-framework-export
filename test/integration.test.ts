@@ -1,16 +1,19 @@
 import "dotenv/config";
-import { EOL, tmpdir } from "os";
+import { remove } from "fs-extra";
+import { join } from "path";
 import { execSync } from "child_process";
+import { EOL, tmpdir } from "os";
 import { default as SDKWrapper } from "../lib/sdk";
 import { default as FileWriter } from "../lib/file";
 
 describe("run", () => {
-  // afterAll(async () => {
-  //   await remove(pathToDefaultOutputDirectory);
-  // });
+  const pathToDefaultOutputDirectory = join(process.cwd(), "output");
+  afterAll(async () => {
+    await remove(pathToDefaultOutputDirectory);
+  });
   test("outputs correct number of newlines", () => {
     const res = execSync("npm start");
-    expect(res.toString().split(EOL)).toHaveLength(12);
+    expect(res.toString().split(EOL)).toHaveLength(11);
   });
 });
 
