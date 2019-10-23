@@ -46,6 +46,7 @@ async function main(args: string[]): Promise<void> {
   const DEFAULT_OUTPUT = "output";
   let [, , outputDirectory] = args;
   if (typeof outputDirectory === "undefined") {
+    log("no output path given as first argument; using default path", { isQuiet: true });
     outputDirectory = process.env.OUTPUT_DIR;
   }
   const outputDir = join(__dirname, outputDirectory || DEFAULT_OUTPUT);
@@ -67,7 +68,7 @@ process.on("unhandledRejection", () => {});
 process.on("uncaughtException", () => {});
 
 main(process.argv).catch(async (err: Error) => {
-  log(err.stack, { hasError: true });
+  log(err.stack, { isQuiet: true });
   if (process.env.OPT_IN_ERROR_REPORTING) {
     Sentry.captureException(err);
   } else {

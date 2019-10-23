@@ -85,4 +85,4 @@ npm start
 To use the files produced by `npm start` in a project:
 
 - move generated files to your project directory
-- [reference generated Language Generation file in your existing .NET, C#, or Node JS code](https://github.com/microsoft/BotBuilder-Samples/blob/master/experimental/adaptive-dialog/docs/language-generation.md).
+- [reference generated Language Generation file in existing .NET, C#, or Node JS codebase](https://github.com/microsoft/BotBuilder-Samples/blob/master/experimental/language-generation/README.md#language-generation-in-action).

@@ -25,7 +25,7 @@ export default class SDKWrapper extends EventEmitter {
   }
   /**
    * Fetches botmock project data using the SDK
-   * @returns Promise<{ data: JSONResponse }>
+   * @returns Promise<null | { data: JSONResponse }>
    */
   public async fetch(): Promise<null | { data: JSONResponse }> {
     try {
