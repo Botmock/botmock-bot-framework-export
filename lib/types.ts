@@ -1,1 +1,1 @@
-export type RequiredState = { [slotName: string]: string[] }[];
+export type RequiredState = { [slotName: string]: string }[];
