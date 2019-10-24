@@ -46,7 +46,6 @@ async function main(args: string[]): Promise<void> {
   const DEFAULT_OUTPUT = "output";
   let [, , outputDirectory] = args;
   if (typeof outputDirectory === "undefined") {
-    // log("no output path given as first argument; using default path", { isQuiet: true });
     outputDirectory = process.env.OUTPUT_DIR;
   }
   const outputDir = join(__dirname, outputDirectory || DEFAULT_OUTPUT);

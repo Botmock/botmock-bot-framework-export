@@ -17,24 +17,31 @@ export async function restoreOutput(outputDir: string): Promise<void> {
 
 interface Config {
   readonly outputDir: string;
-  readonly projectData: flow.CollectedResponses
+  readonly projectData: flow.ProjectData
 }
 
 export default class FileWriter extends flow.AbstractProject {
   static multilineCharacters = "```";
   private readonly outputDir: string;
-  private readonly slotsMap: flow.SlotStructure;
+  private readonly requiredSlotsForIntentIds: flow.SlotStructure;
   private readonly boardStructureByMessagesConnectedByIntents: flow.SegmentizedStructure;
   /**
    * Creates instance of FileWriter
-   * @param config configuration object containing an outputDir to hold generated
-   * files, and projectData for the original botmock flow project
+   * @param config Config
    */
   constructor(config: Config & any) {
     super({ projectData: config.projectData });
     this.outputDir = config.outputDir;
-    this.slotsMap = this.representRequirementsForIntents();
+    this.requiredSlotsForIntentIds = this.representRequirementsForIntents();
     this.boardStructureByMessagesConnectedByIntents = this.segmentizeBoardFromMessages();
+  }
+  /**
+   * Gets a full variable from a variable id
+   * @param variableId string
+   * @returns flow.Variable
+   */
+  private getVariable(variableId: string): flow.Variable & any {
+    return this.projectData.variables.find(variable => variable.id === variableId);
   }
   /**
    * Wraps any entities in the text with correct braces
@@ -83,12 +90,25 @@ export default class FileWriter extends flow.AbstractProject {
     this.emit("write-complete", { filepath: basename(outputFilePath) });
   }
   /**
+   * Creates conditional response template from a required slot
+   * 
+   * @remarks for more on conditional response templates,
+   * see https://github.com/microsoft/BotBuilder-Samples/blob/master/experimental/language-generation/docs/lg-file-format.md#conditional-response-templates
+   * 
+   * @param state { [variableName: string]: string }
+   * @todo
+   */
+  private createConditionalResponseTemplateFromRequiredState(state: { [variableName: string]: string }): string {
+    return "";
+  }
+  /**
    * Maps content block to variations in a template
    * @param message content block
-   * @param requiredState RequiredState
+   * @param requiredState BotFramework.RequiredState
    * @returns string
    */
   private createVariationsFromMessageAndRequiredState(message: flow.Message, requiredState: BotFramework.RequiredState): string {
+    let variations: string;
     const { multilineCharacters } = FileWriter;
     const text = message.payload.hasOwnProperty("text")
       ? this.wrapEntities(message.payload.text)
@@ -96,20 +116,29 @@ export default class FileWriter extends flow.AbstractProject {
     switch (message.message_type) {
       case "jump":
         const { selectedResult } = message.payload;
-        return `- ${multilineCharacters}${EOL}${selectedResult.value}${EOL}${multilineCharacters}`;
+        variations = `- ${multilineCharacters}${EOL}${selectedResult.value}${EOL}${multilineCharacters}`;
+        break;
       case "quick_replies":
       case "button":
         const key = message.message_type === "button" ? "buttons" : "quick_replies";
         const buttons = JSON.stringify(message.payload[key], null, 2);
-        return `- ${multilineCharacters}${EOL}${text + EOL + buttons}${EOL}${multilineCharacters}`;
+        variations = `- ${multilineCharacters}${EOL}${text + EOL + buttons}${EOL}${multilineCharacters}`;
+        break;
       case "image":
-        return `- ${message.payload.image_url}`;
+        variations = `- ${message.payload.image_url}`;
+        break;
       case "generic":
         const payload = JSON.stringify(message.payload, null, 2);
-        return `- ${multilineCharacters}${EOL}${payload}${EOL}${multilineCharacters}`;
+        variations = `- ${multilineCharacters}${EOL}${payload}${EOL}${multilineCharacters}`;
+        break;
       default:
-        return `- ${text}`;
+        variations = `- ${text}`;
+        break;
     }
+    for (const state of requiredState) {
+      variations += this.createConditionalResponseTemplateFromRequiredState(state);
+    }
+    return variations;
   }
   /**
    * Finds required slots for intents connected to message
@@ -117,12 +146,25 @@ export default class FileWriter extends flow.AbstractProject {
    * @returns BotFramework.RequiredState
    */
   private findRequiredSlotsForConnectedIntents(idsOfConnectedIntents: string[]): BotFramework.RequiredState {
-    return Array.from(this.slotsMap)
-      .filter((pair: any) => {
-        const [intentId] = pair;
-        return idsOfConnectedIntents.includes(intentId)
+    return Array.from(this.requiredSlotsForIntentIds)
+      // @ts-ignore
+      .filter((requiredPairs: [string, flow.Slot[]]) => {
+        const [intentId] = requiredPairs;
+        return idsOfConnectedIntents.includes(intentId as string);
       })
-      .map((pair: any) => ({}));
+      .reduce((acc, requiredPairsForConnectedIntents: [string, flow.Slot[]]) => {
+        const [, slots] = requiredPairsForConnectedIntents;
+        const requiredSlotsObjects = slots.map(slot => {
+          const { name: nameOfVariable } = this.getVariable(slot.variable_id);
+          return {
+            [nameOfVariable.replace(/\s/g, "")]: slot.prompt
+          }
+        });
+        return [
+          ...acc,
+          ...requiredSlotsObjects
+        ];
+      }, []);
   }
   /**
    * Writes Language Generation file within outputDir
