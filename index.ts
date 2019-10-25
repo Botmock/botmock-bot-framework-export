@@ -1,10 +1,10 @@
 import "dotenv/config";
 import { join } from "path";
+import { Batcher } from "@botmock-api/client";
 import { RewriteFrames } from "@sentry/integrations";
 import * as Sentry from "@sentry/node";
 import { writeJson } from "fs-extra";
 import { default as FileWriter, restoreOutput } from "./lib/file";
-import { default as SDKWrapper } from "./lib/sdk";
 import { default as log } from "./lib/log";
 import { SENTRY_DSN } from "./lib/constants";
 // @ts-ignore
@@ -52,12 +52,19 @@ async function main(args: string[]): Promise<void> {
   log("recreating output directory");
   await restoreOutput(outputDir);
   log("fetching botmock assets");
-  const { data: projectData } = await new SDKWrapper({
+  const config = {
     token: process.env.BOTMOCK_TOKEN,
     teamId: process.env.BOTMOCK_TEAM_ID,
     projectId: process.env.BOTMOCK_PROJECT_ID,
     boardId: process.env.BOTMOCK_BOARD_ID,
-  }).fetch();
+  };
+  const { data: projectData } = await new Batcher(config).batchRequest([
+    "project",
+    "board",
+    "intents",
+    "entities",
+    "variables",
+  ]);
   log("writing files");
   const fileWriter = new FileWriter({ outputDir, projectData });
   fileWriter.on("write-complete", ({ filepath }) => {

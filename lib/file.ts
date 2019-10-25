@@ -152,7 +152,7 @@ export default class FileWriter extends flow.AbstractProject {
         const [intentId] = requiredPairs;
         return idsOfConnectedIntents.includes(intentId as string);
       })
-      .reduce((acc, requiredPairsForConnectedIntents: [string, flow.Slot[]]) => {
+      .reduce((acc: any[], requiredPairsForConnectedIntents: [string, flow.Slot[]]) => {
         const [, slots] = requiredPairsForConnectedIntents;
         const requiredSlotsObjects = slots.map(slot => {
           const { name: nameOfVariable } = this.getVariable(slot.variable_id);
