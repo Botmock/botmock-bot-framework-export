@@ -52,13 +52,12 @@ async function main(args: string[]): Promise<void> {
   log("recreating output directory");
   await restoreOutput(outputDir);
   log("fetching botmock assets");
-  const config = {
+  const { data: projectData } = await new Batcher({
     token: process.env.BOTMOCK_TOKEN,
     teamId: process.env.BOTMOCK_TEAM_ID,
     projectId: process.env.BOTMOCK_PROJECT_ID,
     boardId: process.env.BOTMOCK_BOARD_ID,
-  };
-  const { data: projectData } = await new Batcher(config).batchRequest([
+  }).batchRequest([
     "project",
     "board",
     "intents",
