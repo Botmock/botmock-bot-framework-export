@@ -1,10 +1,9 @@
-import * as utils from "@botmock-api/utils";
+import * as flow from "@botmock-api/flow";
 import { wrapEntitiesWithChar } from "@botmock-api/text";
 import { remove, mkdirp, writeFile } from "fs-extra";
-import { EventEmitter } from "events";
-import { join } from "path";
+import { join, basename } from "path";
 import { EOL } from "os";
-import * as Assets from "./types";
+import * as BotFramework from "./types";
 
 /**
  * Recreates given path
@@ -18,116 +17,200 @@ export async function restoreOutput(outputDir: string): Promise<void> {
 
 interface Config {
   readonly outputDir: string;
-  readonly projectData: Assets.CollectedResponses
+  readonly projectData: flow.ProjectData
 }
 
-export default class FileWriter extends EventEmitter {
-  private outputDir: string;
-  private projectData: Assets.CollectedResponses;
-  private intentMap: Assets.IntentMap;
+export default class FileWriter extends flow.AbstractProject {
+  static multilineCharacters = "```";
+  private readonly outputDir: string;
+  private readonly requiredSlotsForIntentIds: flow.SlotStructure;
+  private readonly boardStructureByMessagesConnectedByIntents: flow.SegmentizedStructure;
   /**
    * Creates instance of FileWriter
-   * @param config configuration object containing an outputDir to hold generated
-   * files, and projectData for the original botmock flow project
+   * @param config Config
    */
-  constructor(config: Config) {
-    super();
+  constructor(config: Config & any) {
+    super({ projectData: config.projectData });
     this.outputDir = config.outputDir;
-    this.projectData = config.projectData;
-    this.intentMap = utils.createIntentMap(this.projectData.board.board.messages, this.projectData.intents);
+    this.requiredSlotsForIntentIds = this.representRequirementsForIntents();
+    this.boardStructureByMessagesConnectedByIntents = this.segmentizeBoardFromMessages();
   }
   /**
-   * Gets full message from board from an id
-   * @param id string
-   * @returns Message
+   * Gets a full variable from a variable id
+   * @param variableId string
+   * @returns flow.Variable
    */
-  private getMessage(id: string): Assets.Message | void {
-    return this.projectData.board.board.messages.find(message => message.message_id === id);
+  private getVariable(variableId: string): flow.Variable & any {
+    return this.projectData.variables.find(variable => variable.id === variableId);
   }
   /**
-   * Wraps any entities in the text with braces
-   * @param str string
+   * Wraps any entities in the text with correct braces
+   * @param text string
    * @returns string
    */
-  private wrapEntities(str: string): string {
-    return wrapEntitiesWithChar(str, "{");
+  private wrapEntities(text: string): string {
+    return wrapEntitiesWithChar(text, "{");
   }
   /**
    * Creates string with timestamp used in all generated files
    * @returns string
    */
-  private getGenerationLine(): string {
+  private createGenerationLine(): string {
     return `> generated ${new Date().toLocaleString()}`;
   }
   /**
-   * Writes Ludown file within outputDir
-   * @returns Promise<void>
-   */
-  private async writeLU(): Promise<void> {
-    const { name } = this.projectData.project;
-    const outputFilePath = join(this.outputDir, `${name.replace(/\s/g, "").toLowerCase()}.lu`);
-    await writeFile(
-      outputFilePath,
-      this.projectData.intents.reduce((acc, intent: Assets.Intent) => {
-        const template = `# ${intent.name}`;
-        const variations = intent.utterances.map((utterance: Assets.Utterance) => (
-          `- ${this.wrapEntities(utterance.text)}`
-        )).join(EOL);
-        return acc + EOL + template + EOL + variations + EOL;
-      }, this.getGenerationLine())
-    );
-  }
-  /**
-   * Maps content block to the correct lg format
-   * @param message content block
+   * Formats a filename for lu or lg files
+   * @param filename string
    * @returns string
    */
-  private mapContentBlockToLGResponse(message: Assets.Message): string {
-    const MULTILINE_SYMBOL = "```";
+  private formatFilename(filename: string): string {
+    return filename.replace(/\s/g, "").toLowerCase();
+  }
+  /**
+   * Writes Ludown file within outputDir
+   * 
+   * @remarks for more on the .lu file format,
+   * see https://github.com/Microsoft/botbuilder-tools/blob/master/packages/Ludown/docs/lu-file-format.md
+   * 
+   * @returns Promise<void>
+   */
+  private async writeLUFile(): Promise<void> {
+    const { name } = this.projectData.project;
+    const outputFilePath = join(this.outputDir, `${this.formatFilename(name)}.lu`);
+    await writeFile(
+      outputFilePath,
+      this.projectData.intents.reduce((acc, intent: flow.Intent) => {
+        const template = `# ${intent.name}`;
+        const variations = intent.utterances.map(utterance => (
+          `- ${this.wrapEntities(utterance.text)}`
+        )).join(EOL);
+        return [acc, template, variations].join(EOL) + EOL;
+      }, this.createGenerationLine())
+    );
+    this.emit("write-complete", { filepath: basename(outputFilePath) });
+  }
+  /**
+   * Creates conditional response template from a required slot
+   * 
+   * @remarks for more on conditional response templates,
+   * see https://github.com/microsoft/BotBuilder-Samples/blob/master/experimental/language-generation/docs/lg-file-format.md#conditional-response-templates
+   * 
+   * @param state BotFramework.RequiredState
+   * @param variations string
+   * @returns string
+   */
+  private createConditionalResponseTemplateFromRequiredState(state: BotFramework.RequiredState, variations: string): string {
+    return state.map((stateSlice, i) => {
+      const [nameOfRequiredVariable] = Object.keys(stateSlice);
+      const keyword = i === 0 ? "IF" : "ELSEIF";
+      return `- ${keyword}: @{!${nameOfRequiredVariable}}${EOL}\t- ${stateSlice[nameOfRequiredVariable]}`;
+    }).join(EOL).concat(`${EOL}- ELSE: ${EOL}\t${variations}`);
+  }
+  /**
+   * Maps content block to variations in a template
+   * 
+   * @remarks if there is required state, build conditionals from each state slice
+   * 
+   * @param message content block
+   * @param requiredState BotFramework.RequiredState
+   * @returns string
+   */
+  private createVariationsFromMessageAndRequiredState(message: flow.Message, requiredState: BotFramework.RequiredState): string {
+    let variations: string;
+    const { multilineCharacters } = FileWriter;
     const text = message.payload.hasOwnProperty("text")
       ? this.wrapEntities(message.payload.text)
       : JSON.stringify(message.payload, null, 2);
     switch (message.message_type) {
-      // case "api":
-      // case "jump":
+      case "jump":
+        const { selectedResult } = message.payload;
+        variations = `- ${multilineCharacters}${EOL}${selectedResult.value}${EOL}${multilineCharacters}`;
+        break;
       case "quick_replies":
       case "button":
         const key = message.message_type === "button" ? "buttons" : "quick_replies";
         const buttons = JSON.stringify(message.payload[key], null, 2);
-        return `- ${MULTILINE_SYMBOL}${EOL}${text + EOL + buttons}${EOL}${MULTILINE_SYMBOL}`;
+        variations = `- ${multilineCharacters}${EOL}${text + EOL + buttons}${EOL}${multilineCharacters}`;
+        break;
       case "image":
-        return `- ${message.payload.image_url}`;
+        variations = `- ${message.payload.image_url}`;
+        break;
       case "generic":
         const payload = JSON.stringify(message.payload, null, 2);
-        return `- ${MULTILINE_SYMBOL}${EOL}${payload}${EOL}${MULTILINE_SYMBOL}`;
+        variations = `- ${multilineCharacters}${EOL}${payload}${EOL}${multilineCharacters}`;
+        break;
       default:
-        return `- ${text}`;
+        variations = `- ${text}`;
+        break;
     }
+    if (requiredState.length) {
+      return this.createConditionalResponseTemplateFromRequiredState(requiredState, variations);
+    }
+    return variations;
+  }
+  /**
+   * Finds required slots for intents connected to message
+   * @param template string
+   * @returns BotFramework.RequiredState
+   */
+  private findRequiredSlotsForConnectedIntents(idsOfConnectedIntents: string[]): BotFramework.RequiredState {
+    return Array.from(this.requiredSlotsForIntentIds)
+      // @ts-ignore
+      .filter((requiredPairs: [string, flow.Slot[]]) => {
+        const [intentId] = requiredPairs;
+        return idsOfConnectedIntents.includes(intentId as string);
+      })
+      .reduce((acc: any[], requiredPairsForConnectedIntents: [string, flow.Slot[]]) => {
+        const [, slots] = requiredPairsForConnectedIntents;
+        const requiredSlotsObjects = slots.map(slot => {
+          const { name: nameOfVariable } = this.getVariable(slot.variable_id);
+          return {
+            [nameOfVariable.replace(/\s/g, "")]: slot.prompt
+          }
+        });
+        return [
+          ...acc,
+          ...requiredSlotsObjects
+        ];
+      }, []);
   }
   /**
    * Writes Language Generation file within outputDir
+   * 
+   * @remarks for more on the .lg file format,
+   * see https://github.com/microsoft/BotBuilder-Samples/blob/master/experimental/language-generation/README.md
+   * 
    * @returns Promise<void>
    */
-  private async writeLG(): Promise<void> {
+  private async writeLGFile(): Promise<void> {
     const { name } = this.projectData.project;
-    const outputFilePath = join(this.outputDir, `${name.replace(/\s/g, "").toLowerCase()}.lg`);
+    const outputFilePath = join(this.outputDir, `${this.formatFilename(name)}.lg`);
     await writeFile(
       outputFilePath,
-      Array.from(this.intentMap.entries()).reduce((acc, entry: any[]) => {
-        const [idOfMessageConnectedByIntent, connectedIntents] = entry;
-        const message: Assets.Message = this.getMessage(idOfMessageConnectedByIntent) || {};
-        const variations = this.mapContentBlockToLGResponse(message);
-        const template = `# ${message.message_id}`;
-        return acc + EOL + template + EOL + variations + EOL;
-      }, this.getGenerationLine())
+      Array.from(this.boardStructureByMessagesConnectedByIntents.entries())
+        .reduce((acc, entry: [string, string[]]) => {
+          const [idOfMessageConnectedByIntent, idsOfConnectedIntents] = entry;
+          const message = this.getMessage(idOfMessageConnectedByIntent) as flow.Message;
+          const requiredState = this.findRequiredSlotsForConnectedIntents(idsOfConnectedIntents);
+          const variations = this.createVariationsFromMessageAndRequiredState(message, requiredState);
+          const comment = `> ${message.payload.nodeName}`;
+          const template = `# ${message.message_id}`;
+          return [
+            acc,
+            comment,
+            template,
+            variations
+          ].join(EOL) + EOL;
+        }, this.createGenerationLine())
     );
+    this.emit("write-complete", { filepath: basename(outputFilePath) });
   }
   /**
    * Writes all files produced by the exporter
    * @returns Promise<void>
    */
   public async write(): Promise<void> {
-    await this.writeLU();
-    await this.writeLG();
+    await this.writeLUFile();
+    await this.writeLGFile();
   }
 }

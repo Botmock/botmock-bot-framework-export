@@ -2,6 +2,9 @@
   "name": "botmock-botframework-export",
   "version": "1.0.0",
   "description": "import botmock projects in microsoft botframework",
+  "engines": {
+    "node": ">=12.12.0"
+  },
   "scripts": {
     "test": "jest",
     "start": "ts-node index.ts"
@@ -12,11 +15,6 @@
     "microsoft",
     "nodejs"
   ],
-  "prettier": {
-    "trailingComma": "es5",
-    "tabWidth": 2,
-    "printWidth": 80
-  },
   "jest": {
     "preset": "ts-jest",
     "globals": {
@@ -31,25 +29,26 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@botmock-api/client": "1.0.0",
+    "@botmock-api/flow": "0.5.1",
     "@botmock-api/text": "0.2.2",
-    "@botmock-api/utils": "2.3.1",
-    "@sentry/integrations": "5.6.1",
-    "@sentry/node": "5.6.2",
+    "@sentry/integrations": "5.7.1",
+    "@sentry/node": "5.7.1",
     "chalk": "2.4.2",
-    "dotenv": "8.1.0",
+    "dotenv": "8.2.0",
     "fs-extra": "8.1.0",
     "node-fetch": "2.6.0",
     "uuid": "3.3.3"
   },
   "devDependencies": {
-    "@types/fs-extra": "8.0.0",
-    "@types/jest": "24.0.18",
-    "@types/node": "12.7.8",
+    "@types/fs-extra": "8.0.1",
+    "@types/jest": "24.0.19",
+    "@types/node": "12.11.2",
     "@types/node-fetch": "2.5.2",
     "@types/uuid": "3.4.5",
     "jest": "24.9.0",
     "ts-jest": "24.1.0",
     "ts-node": "8.4.1",
-    "typescript": "3.6.3"
+    "typescript": "3.6.4"
   }
 }

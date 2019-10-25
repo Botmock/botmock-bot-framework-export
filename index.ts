@@ -1,13 +1,12 @@
 import "dotenv/config";
 import { join } from "path";
+import { Batcher } from "@botmock-api/client";
 import { RewriteFrames } from "@sentry/integrations";
 import * as Sentry from "@sentry/node";
 import { writeJson } from "fs-extra";
 import { default as FileWriter, restoreOutput } from "./lib/file";
-import { default as APIWrapper } from "./lib/project";
+import { default as log } from "./lib/log";
 import { SENTRY_DSN } from "./lib/constants";
-import { log } from "./lib/util";
-import * as Assets from "./lib/types";
 // @ts-ignore
 import pkg from "./package.json";
 
@@ -35,35 +34,42 @@ Sentry.init({
   }
 });
 
+/**
+ * Calls all fetch methods and calls all write methods
+ *
+ * @remark entry point to the script
+ *
+ * @param args string[]
+ * @returns Promise<void>
+ */
 async function main(args: string[]): Promise<void> {
   const DEFAULT_OUTPUT = "output";
   let [, , outputDirectory] = args;
   if (typeof outputDirectory === "undefined") {
     outputDirectory = process.env.OUTPUT_DIR;
   }
-  try {
-    log("recreating output directory");
-    const outputDir = join(__dirname, outputDirectory || DEFAULT_OUTPUT);
-    await restoreOutput(outputDir);
-    const apiWrapper = new APIWrapper({
-      token: process.env.BOTMOCK_TOKEN,
-      teamId: process.env.BOTMOCK_TEAM_ID,
-      projectId: process.env.BOTMOCK_PROJECT_ID,
-      boardId: process.env.BOTMOCK_BOARD_ID,
-    });
-    apiWrapper.on("asset-fetched", (assetName: string) => {
-      log(`fetched ${assetName}`);
-    });
-    apiWrapper.on("error", (err: Error) => {
-      throw err;
-    });
-    log("fetching botmock assets");
-    const projectData: Assets.CollectedResponses = await apiWrapper.fetch();
-    await new FileWriter({ outputDir, projectData }).write();
-  } catch (err) {
-    log(err.stack, { hasError: true });
-    throw err;
-  }
+  const outputDir = join(__dirname, outputDirectory || DEFAULT_OUTPUT);
+  log("recreating output directory");
+  await restoreOutput(outputDir);
+  log("fetching botmock assets");
+  const { data: projectData } = await new Batcher({
+    token: process.env.BOTMOCK_TOKEN,
+    teamId: process.env.BOTMOCK_TEAM_ID,
+    projectId: process.env.BOTMOCK_PROJECT_ID,
+    boardId: process.env.BOTMOCK_BOARD_ID,
+  }).batchRequest([
+    "project",
+    "board",
+    "intents",
+    "entities",
+    "variables",
+  ]);
+  log("writing files");
+  const fileWriter = new FileWriter({ outputDir, projectData });
+  fileWriter.on("write-complete", ({ filepath }) => {
+    log(`wrote ${filepath}`);
+  });
+  await fileWriter.write();
   log("done");
 }
 
@@ -71,6 +77,7 @@ process.on("unhandledRejection", () => {});
 process.on("uncaughtException", () => {});
 
 main(process.argv).catch(async (err: Error) => {
+  log(err.stack, { isQuiet: true });
   if (process.env.OPT_IN_ERROR_REPORTING) {
     Sentry.captureException(err);
   } else {
