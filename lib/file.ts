@@ -1,6 +1,6 @@
 import * as flow from "@botmock-api/flow";
 import { wrapEntitiesWithChar } from "@botmock-api/text";
-import { remove, mkdirp, writeFile, outputFile } from "fs-extra";
+import { remove, mkdirp, writeFile } from "fs-extra";
 import { join, basename } from "path";
 import { EOL } from "os";
 import * as BotFramework from "./types";
@@ -95,14 +95,22 @@ export default class FileWriter extends flow.AbstractProject {
    * @remarks for more on conditional response templates,
    * see https://github.com/microsoft/BotBuilder-Samples/blob/master/experimental/language-generation/docs/lg-file-format.md#conditional-response-templates
    * 
-   * @param state { [variableName: string]: string }
-   * @todo
+   * @param state BotFramework.RequiredState
+   * @param variations string
+   * @returns string
    */
-  private createConditionalResponseTemplateFromRequiredState(state: { [variableName: string]: string }): string {
-    return "";
+  private createConditionalResponseTemplateFromRequiredState(state: BotFramework.RequiredState, variations: string): string {
+    return state.map((stateSlice, i) => {
+      const [nameOfRequiredVariable] = Object.keys(stateSlice);
+      const keyword = i === 0 ? "IF" : "ELSEIF";
+      return `- ${keyword}: @{!${nameOfRequiredVariable}}${EOL}\t- ${stateSlice[nameOfRequiredVariable]}`;
+    }).join(EOL).concat(`${EOL}- ELSE: ${EOL}\t${variations}`);
   }
   /**
    * Maps content block to variations in a template
+   * 
+   * @remarks if there is required state, build conditionals from each state slice
+   * 
    * @param message content block
    * @param requiredState BotFramework.RequiredState
    * @returns string
@@ -135,8 +143,8 @@ export default class FileWriter extends flow.AbstractProject {
         variations = `- ${text}`;
         break;
     }
-    for (const state of requiredState) {
-      variations += this.createConditionalResponseTemplateFromRequiredState(state);
+    if (requiredState.length) {
+      return this.createConditionalResponseTemplateFromRequiredState(requiredState, variations);
     }
     return variations;
   }
