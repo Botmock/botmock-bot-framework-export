@@ -1,6 +1,6 @@
 import { join } from "path";
 import { tmpdir } from "os";
-import { mkdirp, remove, readFile, readdir } from "fs-extra";
+import { mkdirp, readdir } from "fs-extra";
 import { mockProjectData } from "./fixtures";
 import { default as FileWriter } from "../lib/file";
 

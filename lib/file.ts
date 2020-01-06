@@ -144,6 +144,14 @@ export default class FileWriter extends flow.AbstractProject {
         break;
       default:
         variations = `- ${text}`;
+        // @ts-ignore
+        const { alternate_replies } = message.payload;
+        if (alternate_replies) {
+          for (const reply of alternate_replies) {
+            const { value } = JSON.parse(reply.body);
+            variations += EOL + `- ${value}`;
+          }
+        }
         break;
     }
     if (requiredState.length) {
