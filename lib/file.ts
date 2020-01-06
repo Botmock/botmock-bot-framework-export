@@ -3,7 +3,10 @@ import { wrapEntitiesWithChar } from "@botmock-api/text";
 import { remove, mkdirp, writeFile } from "fs-extra";
 import { join, basename } from "path";
 import { EOL } from "os";
-import * as BotFramework from "./types";
+
+namespace BotFramework {
+  export type RequiredState = { [slotName: string]: string; }[];
+}
 
 /**
  * Recreates given path

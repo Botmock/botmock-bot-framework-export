@@ -3,8 +3,6 @@ import { remove } from "fs-extra";
 import { join } from "path";
 import { execSync } from "child_process";
 import { EOL, tmpdir } from "os";
-// import { default as SDKWrapper } from "../lib/sdk";
-import { default as FileWriter } from "../lib/file";
 
 describe("import", () => {
   test.todo("output imports into bot framework sdk");

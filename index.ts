@@ -1,13 +1,13 @@
 import "dotenv/config";
 import { join } from "path";
+import { writeJson } from "fs-extra";
 import { Batcher } from "@botmock-api/client";
 import { default as log } from "@botmock-api/log";
 import { RewriteFrames } from "@sentry/integrations";
 import * as Sentry from "@sentry/node";
-import { writeJson } from "fs-extra";
-import { default as FileWriter, restoreOutput } from "./lib/file";
 import { SENTRY_DSN } from "./lib/constants";
-import pkg from "./package.json";
+import { default as pkg } from "./package.json";
+import { default as FileWriter, restoreOutput } from "./lib/file";
 
 declare global {
   namespace NodeJS {
