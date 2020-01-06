@@ -17,7 +17,7 @@ export async function restoreOutput(outputDir: string): Promise<void> {
 
 interface Config {
   readonly outputDir: string;
-  readonly projectData: flow.ProjectData
+  readonly projectData: flow.ProjectData;
 }
 
 export default class FileWriter extends flow.AbstractProject {
@@ -166,7 +166,7 @@ export default class FileWriter extends flow.AbstractProject {
           const { name: nameOfVariable } = this.getVariable(slot.variable_id);
           return {
             [nameOfVariable.replace(/\s/g, "")]: slot.prompt
-          }
+          };
         });
         return [
           ...acc,
