@@ -3,7 +3,10 @@ import { wrapEntitiesWithChar } from "@botmock-api/text";
 import { remove, mkdirp, writeFile } from "fs-extra";
 import { join, basename } from "path";
 import { EOL } from "os";
-import * as BotFramework from "./types";
+
+namespace BotFramework {
+  export type RequiredState = { [slotName: string]: string; }[];
+}
 
 /**
  * Recreates given path
@@ -17,7 +20,7 @@ export async function restoreOutput(outputDir: string): Promise<void> {
 
 interface Config {
   readonly outputDir: string;
-  readonly projectData: flow.ProjectData
+  readonly projectData: flow.ProjectData;
 }
 
 export default class FileWriter extends flow.AbstractProject {
@@ -141,6 +144,14 @@ export default class FileWriter extends flow.AbstractProject {
         break;
       default:
         variations = `- ${text}`;
+        // @ts-ignore
+        const { alternate_replies } = message.payload;
+        if (alternate_replies) {
+          for (const reply of alternate_replies) {
+            const { value } = JSON.parse(reply.body);
+            variations += EOL + `- ${value}`;
+          }
+        }
         break;
     }
     if (requiredState.length) {
@@ -166,7 +177,7 @@ export default class FileWriter extends flow.AbstractProject {
           const { name: nameOfVariable } = this.getVariable(slot.variable_id);
           return {
             [nameOfVariable.replace(/\s/g, "")]: slot.prompt
-          }
+          };
         });
         return [
           ...acc,

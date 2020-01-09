@@ -1,14 +1,13 @@
 import "dotenv/config";
 import { join } from "path";
+import { writeJson } from "fs-extra";
 import { Batcher } from "@botmock-api/client";
+import { default as log } from "@botmock-api/log";
 import { RewriteFrames } from "@sentry/integrations";
 import * as Sentry from "@sentry/node";
-import { writeJson } from "fs-extra";
-import { default as FileWriter, restoreOutput } from "./lib/file";
-import { default as log } from "./lib/log";
 import { SENTRY_DSN } from "./lib/constants";
-// @ts-ignore
-import pkg from "./package.json";
+import { default as pkg } from "./package.json";
+import { default as FileWriter, restoreOutput } from "./lib/file";
 
 declare global {
   namespace NodeJS {
@@ -36,11 +35,8 @@ Sentry.init({
 
 /**
  * Calls all fetch methods and calls all write methods
- *
  * @remark entry point to the script
- *
- * @param args string[]
- * @returns Promise<void>
+ * @param args argument vector
  */
 async function main(args: string[]): Promise<void> {
   const DEFAULT_OUTPUT = "output";
@@ -77,7 +73,7 @@ process.on("unhandledRejection", () => {});
 process.on("uncaughtException", () => {});
 
 main(process.argv).catch(async (err: Error) => {
-  log(err.stack, { isQuiet: true });
+  log(err.stack, { isError: true });
   if (process.env.OPT_IN_ERROR_REPORTING) {
     Sentry.captureException(err);
   } else {
