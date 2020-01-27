@@ -8,6 +8,8 @@ namespace BotFramework {
   export type RequiredState = { [slotName: string]: string; }[];
 }
 
+type AbstractObject<T> = { [key: string]: T; };
+
 /**
  * Recreates given path
  * @param outputDir the location of the directory that contains generated output files
@@ -90,6 +92,7 @@ export default class FileWriter extends flow.AbstractProject {
         return [acc, template, variations].join(EOL) + EOL;
       }, this.createGenerationLine())
     );
+    // @ts-ignore
     this.emit("write-complete", { filepath: basename(outputFilePath) });
   }
   /**
@@ -162,7 +165,6 @@ export default class FileWriter extends flow.AbstractProject {
   /**
    * Finds required slots for intents connected to message
    * @param template string
-   * @returns BotFramework.RequiredState
    */
   private findRequiredSlotsForConnectedIntents(idsOfConnectedIntents: string[]): BotFramework.RequiredState {
     return Array.from(this.requiredSlotsForIntentIds)
@@ -173,15 +175,19 @@ export default class FileWriter extends flow.AbstractProject {
       })
       .reduce((acc: any[], requiredPairsForConnectedIntents: [string, flow.Slot[]]) => {
         const [, slots] = requiredPairsForConnectedIntents;
-        const requiredSlotsObjects = slots.map(slot => {
-          const { name: nameOfVariable } = this.getVariable(slot.variable_id);
-          return {
+        const requiredSlots: AbstractObject<string>[] = [];
+        for (const slot of slots) {
+          const { name: nameOfVariable } = this.getVariable(slot.variable_id) ?? {};
+          if (!nameOfVariable) {
+            continue;
+          }
+          requiredSlots.push({
             [nameOfVariable.replace(/\s/g, "")]: slot.prompt
-          };
-        });
+          });
+        }
         return [
           ...acc,
-          ...requiredSlotsObjects
+          ...requiredSlots,
         ];
       }, []);
   }
@@ -214,6 +220,7 @@ export default class FileWriter extends flow.AbstractProject {
           ].join(EOL) + EOL;
         }, this.createGenerationLine())
     );
+    // @ts-ignore
     this.emit("write-complete", { filepath: basename(outputFilePath) });
   }
   /**
