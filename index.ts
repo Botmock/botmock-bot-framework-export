@@ -62,6 +62,7 @@ async function main(args: string[]): Promise<void> {
   ]);
   log("writing files");
   const fileWriter = new FileWriter({ outputDir, projectData });
+  // @ts-ignore
   fileWriter.on("write-complete", ({ filepath }) => {
     log(`wrote ${filepath}`);
   });

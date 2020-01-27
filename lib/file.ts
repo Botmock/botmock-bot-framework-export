@@ -92,6 +92,7 @@ export default class FileWriter extends flow.AbstractProject {
         return [acc, template, variations].join(EOL) + EOL;
       }, this.createGenerationLine())
     );
+    // @ts-ignore
     this.emit("write-complete", { filepath: basename(outputFilePath) });
   }
   /**
@@ -219,6 +220,7 @@ export default class FileWriter extends flow.AbstractProject {
           ].join(EOL) + EOL;
         }, this.createGenerationLine())
     );
+    // @ts-ignore
     this.emit("write-complete", { filepath: basename(outputFilePath) });
   }
   /**
