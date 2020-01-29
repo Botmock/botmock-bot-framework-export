@@ -82,7 +82,7 @@ npm start
 
 #### File movement
 
-The script creates some of the files expected in Botframework app.
+The script creates some of the files expected in Botframework apps.
 
 For more on this, see [the examples](https://github.com/microsoft/BotBuilder-Samples/tree/master/experimental/language-generation/javascript_nodejs/05.multi-turn-prompt)
 
