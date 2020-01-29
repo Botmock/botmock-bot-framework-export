@@ -1,6 +1,6 @@
 # Botmock Bot Framework Export
 
-[![Build Status](https://dev.azure.com/botmock/botmock-botframework-export/_apis/build/status/Botmock.botmock-botframework-export?branchName=master)](https://dev.azure.com/botmock/botmock-botframework-export/_build/latest?definitionId=1&branchName=master)
+<!-- [![Build Status](https://dev.azure.com/botmock/botmock-botframework-export/_apis/build/status/Botmock.botmock-botframework-export?branchName=master)](https://dev.azure.com/botmock/botmock-botframework-export/_build/latest?definitionId=1&branchName=master) -->
 
 > creates bot framework [language generation](https://github.com/Microsoft/BotBuilder-Samples/tree/master/experimental/language-generation#language-generation-preview), and [ludown](https://github.com/Microsoft/botbuilder-tools/blob/master/packages/Ludown/docs/lu-file-format.md) files from a botmock project for use with .NET, C#, or NodeJS bot framework projects
 
@@ -82,7 +82,11 @@ npm start
 
 #### File movement
 
+The script creates some of the files expected in Botframework apps.
+
+For more on this, see [the examples](https://github.com/microsoft/BotBuilder-Samples/tree/master/experimental/language-generation/javascript_nodejs/05.multi-turn-prompt)
+
 To use the files produced by `npm start` in a project:
 
 - move generated files to your project directory
-- [reference generated Language Generation file in existing .NET, C#, or Node JS codebase](https://github.com/microsoft/BotBuilder-Samples/blob/master/experimental/language-generation/README.md#language-generation-in-action).
+- reference generated Language Generation file in existing .NET, C#, or Node JS codebase

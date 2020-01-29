@@ -4,6 +4,15 @@ import { remove, mkdirp, writeFile } from "fs-extra";
 import { join, basename } from "path";
 import { EOL } from "os";
 
+enum MessageTypes {
+  API = "api",
+  JUMP = "jump",
+  QUICK_REPLIES = "quick_replies",
+  BUTTON = "button",
+  IMAGE = "image",
+  CARD = "GENERIC",
+}
+
 namespace BotFramework {
   export type RequiredState = { [slotName: string]: string; }[];
 }
@@ -128,20 +137,22 @@ export default class FileWriter extends flow.AbstractProject {
       ? this.wrapEntities(message.payload.text)
       : JSON.stringify(message.payload, null, 2);
     switch (message.message_type) {
-      case "jump":
+      case MessageTypes.API:
+        break;
+      case MessageTypes.JUMP:
         const { selectedResult } = message.payload;
         variations = `- ${multilineCharacters}${EOL}${selectedResult.value}${EOL}${multilineCharacters}`;
         break;
-      case "quick_replies":
-      case "button":
+      case MessageTypes.QUICK_REPLIES:
+      case MessageTypes.BUTTON:
         const key = message.message_type === "button" ? "buttons" : "quick_replies";
         const buttons = JSON.stringify(message.payload[key], null, 2);
         variations = `- ${multilineCharacters}${EOL}${text + EOL + buttons}${EOL}${multilineCharacters}`;
         break;
-      case "image":
+      case MessageTypes.IMAGE:
         variations = `- ${message.payload.image_url}`;
         break;
-      case "generic":
+      case MessageTypes.CARD:
         const payload = JSON.stringify(message.payload, null, 2);
         variations = `- ${multilineCharacters}${EOL}${payload}${EOL}${multilineCharacters}`;
         break;

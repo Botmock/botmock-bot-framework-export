@@ -70,8 +70,8 @@ async function main(args: string[]): Promise<void> {
   log("done");
 }
 
-process.on("unhandledRejection", () => {});
-process.on("uncaughtException", () => {});
+process.on("unhandledRejection", () => { });
+process.on("uncaughtException", () => { });
 
 main(process.argv).catch(async (err: Error) => {
   log(err.stack, { isError: true });
