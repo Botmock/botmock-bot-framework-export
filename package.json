@@ -1,7 +1,7 @@
 {
   "name": "botmock-botframework-export",
   "version": "2.0.0",
-  "description": "import botmock projects in microsoft botframework",
+  "description": "import botmock projects in microsoft bot framework",
   "engines": {
     "node": ">=12.12.0"
   },
@@ -20,6 +20,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@botmock/export": "^0.12.0",
     "dotenv": "8.2.0"
   },
   "devDependencies": {
