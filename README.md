@@ -1,6 +1,6 @@
 # Botmock Bot Framework Export
 
-Node.js project for importing [Botmock](https://botmock.com) projects in Bot Framework
+Node.js project for importing [Botmock](https://botmock.com) projects in [Bot Framework](https://dev.botframework.com/)
 
 > **Note**: The deprecated version of this exporter can be found in the `legacy` branch.
 
