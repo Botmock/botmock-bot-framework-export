@@ -24,4 +24,4 @@ Running the following commands should allow you to generate restorable content f
 - `mv ./sample.env ./env` and edit `.env` to contain your token and project ids
 - `npm start`
 
-`./output` should be generated in your project root.
+`./output` should be generated in your project root, containing a `.lg` file and numerous `.json` files representing cards.
